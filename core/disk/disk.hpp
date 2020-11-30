@@ -11,7 +11,7 @@ class Partition;
 class Disk
 {
 public:
-  Disk(DiskStream*,uint32_t);
+  Disk(DiskStream* stream, uint32_t sectorSize);
   ~Disk();
 
   DataProvider* getDataProvider();

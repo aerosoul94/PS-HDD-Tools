@@ -10,9 +10,9 @@ DataProvider::DataProvider(DiskStream* stream, uint32_t sectorSize)
   this->sectorBias = 0;
 }
 
-void DataProvider::setCryptoMethod(CryptoStrategy* method)
+void DataProvider::setCryptoStrategy(CryptoStrategy* strategy)
 {
-  this->cryptoMethod = method;
+  this->cryptoMethod = strategy;
 }
 
 void DataProvider::setSectorBias(uint32_t sector)

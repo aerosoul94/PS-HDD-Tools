@@ -13,7 +13,7 @@ class DataProvider
 public:
   DataProvider(DiskStream* stream, uint32_t sectorSize);
 
-  void setCryptoMethod(CryptoStrategy* cryptoMethod);
+  void setCryptoStrategy(CryptoStrategy* strategy);
   void setSectorBias(uint32_t sector);
   virtual uint64_t read(char* data, uint32_t length);
   virtual uint64_t seek(int64_t offset, uint32_t whence = 0);

@@ -52,7 +52,7 @@ void OrbisDiskFormat::build(Disk* disk, DiskConfig* config)
     (ent->lba_end - ent->lba_start) * kSectorSize
   );
 
-  partition->getDataProvider()->setCryptoMethod(
+  partition->getDataProvider()->setCryptoStrategy(
     new AesXtsStrategy(keys.data(), keys.data() + 0x10)
   );
 
@@ -60,7 +60,7 @@ void OrbisDiskFormat::build(Disk* disk, DiskConfig* config)
   // for (auto ent : partitionTable) {
   //   auto partition = new Partition(disk);
   //   auto partitionDataProvider = partition->getDataProvider();
-  //   partitionDataProvider->setCryptoMethod(
+  //   partitionDataProvider->setCryptoStrategy(
   //     new AesXtsStrategy(keys.data(), keys.data() + 0x10)
   //   );
   //   partitions.push_back(partition);

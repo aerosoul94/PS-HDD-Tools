@@ -57,7 +57,7 @@ bool CellDiskFormat::match(Disk* disk, DiskConfig* config)
 
   this->type = Ps3Type::NAND;
   dataProvider->seek(0);
-  dataProvider->setCryptoMethod(
+  dataProvider->setCryptoStrategy(
     new AesCbcSwappedStrategy(ataKeys)
   );
   dataProvider->read(buf.data(), kSectorSize);
@@ -67,7 +67,7 @@ bool CellDiskFormat::match(Disk* disk, DiskConfig* config)
 
   this->type = Ps3Type::NOR;
   dataProvider->seek(0);
-  dataProvider->setCryptoMethod(
+  dataProvider->setCryptoStrategy(
     new AesXtsSwappedStrategy(ataKeys.data(), ataKeys.data() + 0x20)
   );
   dataProvider->read(buf.data(), kSectorSize);
