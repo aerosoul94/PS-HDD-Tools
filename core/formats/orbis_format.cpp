@@ -52,7 +52,9 @@ void OrbisDiskFormat::build(Disk* disk, DiskConfig* config)
     (ent->lba_end - ent->lba_start) * kSectorSize
   );
 
-  partition->getDataProvider()->setCryptoStrategy(
+  auto partitionDataProvider = partition->getDataProvider();
+  partitionDataProvider->setSectorBias(ent->lba_start);
+  partitionDataProvider->setCryptoStrategy(
     new AesXtsStrategy(keys.data(), keys.data() + 0x10)
   );
 

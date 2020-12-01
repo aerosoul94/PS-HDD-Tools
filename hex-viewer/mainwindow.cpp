@@ -9,6 +9,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 
+#include <disk/partition.hpp>
 #include <formats/disk_format_factory.hpp>
 
 MainWindow::MainWindow(QWidget* parent)
@@ -49,8 +50,9 @@ void MainWindow::slotOpenFile()
   keyFile->close();
   Disk* disk = DiskFormatFactory::getInstance()->detectFormat(&config);
   // Enable this to only view a single partition
-  //QDiskDevice* device = new QDiskDevice(disk->getPartitions()[0]->getDataProvider());
-  QDiskDevice* device = new QDiskDevice(disk->getDataProvider());
+  QDiskDevice* device = new QDiskDevice(disk->getPartitions()[0]->getDataProvider());
+  // Enable this to view the entire drive
+  //QDiskDevice* device = new QDiskDevice(disk->getDataProvider());
   device->open(QIODevice::ReadOnly);
   QHexDocument* hexEditData = QHexDocument::fromDevice<QDiskBuffer>(device);
   m_hexView->setDocument(hexEditData);

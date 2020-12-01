@@ -17,6 +17,7 @@ void DataProvider::setCryptoStrategy(CryptoStrategy* strategy)
 
 void DataProvider::setSectorBias(uint32_t sector)
 {
+  // TODO: Move this method to AesXtsStrategy or CryptoStrategy
   this->sectorBias = sector;
 }
 
