@@ -19,6 +19,7 @@ private:
 private slots:
   void slotOpenFile();
   void slotGotoOffset();
+  void slotCopyData();
 };
 
 #endif /* MAINWINDOW_HPP */

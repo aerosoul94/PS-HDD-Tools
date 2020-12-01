@@ -8,6 +8,8 @@
 #include <QToolBar>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QApplication>
+#include <QClipboard>
 
 #include <disk/partition.hpp>
 #include <formats/disk_format_factory.hpp>
@@ -30,6 +32,12 @@ MainWindow::MainWindow(QWidget* parent)
   gotoAction->setShortcut(Qt::CTRL | Qt::Key_G);
   connect(gotoAction, SIGNAL(triggered()), this, SLOT(slotGotoOffset()));
   this->addAction(gotoAction);
+
+  // TODO: For some reason QHexView doesn't allow copying when in read-only mode
+  QAction* copyAction = new QAction(this);
+  copyAction->setShortcut(Qt::CTRL | Qt::Key_C);
+  connect(copyAction, SIGNAL(triggered()), this, SLOT(slotCopyData()));
+  this->addAction(copyAction);
 }
 
 void MainWindow::slotOpenFile()
@@ -79,4 +87,13 @@ void MainWindow::slotGotoOffset()
       cursor->moveTo(offset);
     }
   }
+}
+
+void MainWindow::slotCopyData()
+{
+  auto document = m_hexView->document();
+  if (!document->cursor()->hasSelection())
+    return;
+  auto bytes = document->selectedBytes().toHex(' ').toUpper();
+  qApp->clipboard()->setText(bytes);
 }
