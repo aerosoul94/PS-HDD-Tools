@@ -5,6 +5,8 @@
 
 #include <qhexview.h>
 
+#include <disk/disk.hpp>
+
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
@@ -15,6 +17,8 @@ public:
 private:
   QHexView* m_hexView;
   QFile* m_imageFile;
+
+  Disk* m_disk;
 
 private slots:
   void slotOpenFile();

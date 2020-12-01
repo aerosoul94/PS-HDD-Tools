@@ -45,26 +45,35 @@ void MainWindow::slotOpenFile()
   auto fileName = QFileDialog::getOpenFileName(this, tr("Open Image File"));
   if (fileName.isNull())
     return;
+
   auto keyFileName = QFileDialog::getOpenFileName(this, tr("Open Key File"));
   if (keyFileName.isNull())
     return;
+
   if (m_imageFile && m_imageFile->isOpen())
     m_imageFile->close();
   m_imageFile = new QFile(fileName);
+
+  if (m_disk)
+    delete m_disk;
+
   QFile* keyFile = new QFile(keyFileName);
   m_imageFile->open(QIODevice::ReadOnly);
+  QFileDiskStream* stream = new QFileDiskStream(m_imageFile);
+
   keyFile->open(QIODevice::ReadOnly);
   auto keyLen = keyFile->size();
-  QFileDiskStream* stream = new QFileDiskStream(m_imageFile);
+  
   DiskConfig config;
   config.setStream(stream);
   config.setKeys(keyFile->readAll().data(), keyLen);
   keyFile->close();
-  Disk* disk = DiskFormatFactory::getInstance()->detectFormat(&config);
+
+  m_disk = DiskFormatFactory::getInstance()->detectFormat(&config);
   // Enable this to only view a single partition
-  QDiskDevice* device = new QDiskDevice(disk->getPartitions()[0]->getDataProvider());
+  QDiskDevice* device = new QDiskDevice(m_disk->getPartitions()[0]->getDataProvider());
   // Enable this to view the entire drive
-  //QDiskDevice* device = new QDiskDevice(disk->getDataProvider());
+  //QDiskDevice* device = new QDiskDevice(m_disk->getDataProvider());
   device->open(QIODevice::ReadOnly);
   QHexDocument* hexEditData = QHexDocument::fromDevice<QDiskBuffer>(device);
   m_hexView->setDocument(hexEditData);
@@ -77,11 +86,10 @@ void MainWindow::slotGotoOffset()
     QLineEdit::Normal, "", &ok);
   if (ok && !offsetText.isEmpty()) {
     quint64 offset;
-    if (offsetText.startsWith("0x")) {
+    if (offsetText.startsWith("0x"))
       offset = offsetText.toULongLong(&ok, 16);
-    } else {
+    else
       offset = offsetText.toULongLong(&ok, 10);
-    }
     if (ok) {
       auto cursor = m_hexView->document()->cursor();
       cursor->moveTo(offset);
