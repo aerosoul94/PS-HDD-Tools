@@ -68,8 +68,15 @@ void MainWindow::slotGotoOffset()
   QString offsetText = QInputDialog::getText(this, tr("Go to offset"), tr("Enter Offset"),
     QLineEdit::Normal, "", &ok);
   if (ok && !offsetText.isEmpty()) {
-    quint64 offset = offsetText.toULongLong();
-    auto cursor = m_hexView->document()->cursor();
-    cursor->moveTo(offset);
+    quint64 offset;
+    if (offsetText.startsWith("0x")) {
+      offset = offsetText.toULongLong(&ok, 16);
+    } else {
+      offset = offsetText.toULongLong(&ok, 10);
+    }
+    if (ok) {
+      auto cursor = m_hexView->document()->cursor();
+      cursor->moveTo(offset);
+    }
   }
 }
