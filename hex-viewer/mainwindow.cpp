@@ -35,7 +35,11 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::slotOpenFile()
 {
   auto fileName = QFileDialog::getOpenFileName(this, tr("Open Image File"));
+  if (fileName.isNull())
+    return;
   auto keyFileName = QFileDialog::getOpenFileName(this, tr("Open Key File"));
+  if (keyFileName.isNull())
+    return;
   if (m_imageFile && m_imageFile->isOpen())
     m_imageFile->close();
   m_imageFile = new QFile(fileName);
