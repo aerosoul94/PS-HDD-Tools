@@ -21,7 +21,9 @@ The decryption tool will take an hdd image and a key file as input and output a 
 decrypt-tool <input image> <key file> <output file>
 ```
 ## Hex Viewer
-Hex viewer that allows you to view decrypted contents of an HDD image. 
+Hex viewer that allows you to view decrypted contents of an HDD image.
+
+You can go to any offset by pressing `CTRL + G` and entering either a decimal value or a hexidecimal value beginning with "0x".
 
 # Todo
 - Decrypt second layer of encryption for vflash (PS3)
