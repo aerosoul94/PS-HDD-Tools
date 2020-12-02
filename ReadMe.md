@@ -9,7 +9,7 @@ Requires either the EID root key (PS3) or EAP hdd key (PS4).
 
 # Thanks to
 * flat_z
-* gleveland
+* glevand
 * naehrwert
 * 3141card
 
