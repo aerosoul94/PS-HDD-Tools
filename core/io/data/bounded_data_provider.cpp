@@ -10,7 +10,7 @@ BoundedDataProvider::BoundedDataProvider(
   : DataProvider(base->getStream(), sectorSize)
 {
   this->position = 0;
-  this->cryptoMethod = base->getCryptoMethod();
+  this->cryptoStrategy = base->getCryptoMethod();
   this->start = start;
   this->end = start + length;
   this->length = length;
@@ -41,8 +41,8 @@ uint64_t BoundedDataProvider::read(char* data, uint32_t length)
   auto readLen = this->stream->read(tempBuf.data(), alignedLength);
 
   // Decrypt if needed
-  if (this->cryptoMethod)
-    this->cryptoMethod->decrypt(tempBuf.data(), sector - sectorBias, alignedLength);
+  if (this->cryptoStrategy)
+    this->cryptoStrategy->decrypt(tempBuf.data(), sector - sectorBias, alignedLength);
 
   // Only read what we need
   memcpy(data, tempBuf.data() + (pos - offset), length);

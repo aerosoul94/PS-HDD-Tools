@@ -24,7 +24,7 @@ public:
   
 protected:
   DiskStream* stream;
-  CryptoStrategy* cryptoMethod;
+  CryptoStrategy* cryptoStrategy;
   uint32_t sectorSize;
   uint32_t sectorBias;
 };

@@ -6,13 +6,13 @@
 DataProvider::DataProvider(DiskStream* stream, uint32_t sectorSize)
   : stream(stream), sectorSize(sectorSize)
 {
-  this->cryptoMethod = nullptr;
+  this->cryptoStrategy = nullptr;
   this->sectorBias = 0;
 }
 
 void DataProvider::setCryptoStrategy(CryptoStrategy* strategy)
 {
-  this->cryptoMethod = strategy;
+  this->cryptoStrategy = strategy;
 }
 
 void DataProvider::setSectorBias(uint32_t sector)
@@ -43,8 +43,8 @@ uint64_t DataProvider::read(char* data, uint32_t length)
   auto readLen = this->stream->read(tempBuf.data(), alignedLength);
 
   // Decrypt if needed
-  if (this->cryptoMethod)
-    this->cryptoMethod->decrypt(tempBuf.data(), sector - sectorBias, alignedLength);
+  if (this->cryptoStrategy)
+    this->cryptoStrategy->decrypt(tempBuf.data(), sector - sectorBias, alignedLength);
 
   // Only read what we need
   memcpy(data, tempBuf.data() + (pos - offset), length);
@@ -69,7 +69,7 @@ DiskStream* DataProvider::getStream() const
 
 CryptoStrategy* DataProvider::getCryptoMethod() const
 {
-  return this->cryptoMethod;
+  return this->cryptoStrategy;
 }
 
 uint64_t DataProvider::getLength() const
