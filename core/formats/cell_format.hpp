@@ -24,7 +24,7 @@ private:
   std::vector<char> ataKeys;
   std::vector<char> encDecKeys;
   const uint32_t kSectorSize = 0x200;
-  enum class Ps3Type {UNK,NOR,NAND} type = Ps3Type::UNK;
+  enum class Ps3Type {UNK,PHAT,SLIM/*,ARC*/} type = Ps3Type::UNK;
 };
 
 #endif /* CELL_FORMAT_HPP */

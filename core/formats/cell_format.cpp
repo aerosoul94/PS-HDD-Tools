@@ -55,7 +55,7 @@ bool CellDiskFormat::match(Disk* disk, DiskConfig* config)
 
   std::vector<char> buf(kSectorSize);
 
-  this->type = Ps3Type::NAND;
+  this->type = Ps3Type::PHAT;
   dataProvider->seek(0);
   dataProvider->setCryptoStrategy(
     new AesCbcSwappedStrategy(ataKeys)
@@ -65,7 +65,7 @@ bool CellDiskFormat::match(Disk* disk, DiskConfig* config)
   if (swap64(hdr->d_magic1) == MAGIC1 && swap64(hdr->d_magic2) == MAGIC2)
     return true;
 
-  this->type = Ps3Type::NOR;
+  this->type = Ps3Type::SLIM;
   dataProvider->seek(0);
   dataProvider->setCryptoStrategy(
     new AesXtsSwappedStrategy(ataKeys.data(), ataKeys.data() + 0x20)
@@ -125,20 +125,29 @@ void CellDiskFormat::build(Disk* disk, DiskConfig* config)
 {
   auto dataProvider = disk->getDataProvider();
   dataProvider->seek(0);
-  std::vector<char> buf(0x2000);
-  dataProvider->read(buf.data(), 0x2000);
+  std::vector<char> buf(0x1000);
+  dataProvider->read(buf.data(), 0x1000);
 
   auto table = reinterpret_cast<d_partition*>(buf.data() + sizeof(disklabel));
   d_partition* vflash,* hdd0,* hdd1;
   switch (type) {
-    case Ps3Type::NOR:
+    case Ps3Type::SLIM:
       vflash = &table[0];
       hdd0 = &table[1];
       hdd1 = &table[2];
       break;
-    case Ps3Type::NAND:
-      hdd0 = &table[0];
-      hdd1 = &table[1];
+    case Ps3Type::PHAT:
+      // TODO: I'm not sure if this is entirely reliable.
+      //   This is how we're detecting the VFLASH partition.
+      //   Alternatively, we could probably look into the p_acl fields.
+      if (swap64(table[0].p_start) == 8) {
+        vflash = &table[0];
+        hdd0 = &table[1];
+        hdd1 = &table[2];
+      } else {
+        hdd0 = &table[0];
+        hdd1 = &table[1];
+      }
       break;
     case Ps3Type::UNK: // Should not be possible.
     default:
