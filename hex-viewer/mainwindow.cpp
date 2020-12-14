@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget* parent)
 
   setCentralWidget(m_hexView);
 
-  QToolBar* fileToolBar = addToolBar("File");
+  addToolBar("File");
   QMenu* fileMenu = menuBar()->addMenu("&File");
   fileMenu->addAction("Open..", this, SLOT(slotOpenFile()));
 
