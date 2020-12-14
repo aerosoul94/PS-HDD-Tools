@@ -1,4 +1,5 @@
 #include "mainwindow.hpp"
+#include "searchdialog.hpp"
 #include "QDiskDevice.hpp"
 #include "QFileDiskStream.hpp"
 #include "QDiskBuffer.hpp"
@@ -10,6 +11,7 @@
 #include <QInputDialog>
 #include <QApplication>
 #include <QClipboard>
+#include <QMessageBox>
 
 #include <disk/partition.hpp>
 #include <formats/disk_format_factory.hpp>
@@ -18,6 +20,10 @@ MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
 {
   m_imageFile = nullptr;
+
+  m_disk = nullptr;
+  m_partition = nullptr;
+  m_searchDialog = nullptr;
 
   m_hexView = new QHexView(this);
   m_hexView->setReadOnly(true);
@@ -38,6 +44,11 @@ MainWindow::MainWindow(QWidget* parent)
   copyAction->setShortcut(Qt::CTRL | Qt::Key_C);
   connect(copyAction, SIGNAL(triggered()), this, SLOT(slotCopyData()));
   this->addAction(copyAction);
+
+  QAction* findAction = new QAction(this);
+  findAction->setShortcut(Qt::CTRL | Qt::Key_F);
+  connect(findAction, SIGNAL(triggered()), this, SLOT(slotFindData()));
+  this->addAction(findAction);
 }
 
 void MainWindow::slotOpenFile()
@@ -70,13 +81,31 @@ void MainWindow::slotOpenFile()
   keyFile->close();
 
   m_disk = DiskFormatFactory::getInstance()->detectFormat(&config);
+  if (!m_disk) {
+    QMessageBox::warning(this, tr("Cannot load disk"),
+      tr("Disk format not recognized."));
+    return;
+  }
+
+  if (!m_disk->getPartitions().size()) {
+    QMessageBox::warning(this, tr("Cannot load disk"), 
+      tr("No partitions were found."));
+    return;
+  }
+
+  m_partition = m_disk->getPartitions()[0];
   // Enable this to only view a single partition
-  QDiskDevice* device = new QDiskDevice(m_disk->getPartitions()[0]->getDataProvider());
+  QDiskDevice* device = new QDiskDevice(m_partition->getDataProvider());
   // Enable this to view the entire drive
   //QDiskDevice* device = new QDiskDevice(m_disk->getDataProvider());
   device->open(QIODevice::ReadOnly);
   QHexDocument* hexEditData = QHexDocument::fromDevice<QDiskBuffer>(device);
+  //hexEditData->setBaseAddress(m_partition->getStart());
   m_hexView->setDocument(hexEditData);
+
+  m_searchDialog = new SearchDialog(m_partition->getDataProvider(), 
+    m_hexView->document()->cursor(), this);
+  //connect(m_searchDialog, SIGNAL(finished()), SLOT());
 }
 
 void MainWindow::slotGotoOffset()
@@ -104,4 +133,17 @@ void MainWindow::slotCopyData()
     return;
   auto bytes = document->selectedBytes().toHex(' ').toUpper();
   qApp->clipboard()->setText(bytes);
+}
+
+void MainWindow::slotFindData()
+{
+  // Make sure a disk is loaded
+  if (!m_partition)
+    return;
+  // Check if the search dialog is already open
+  if (m_searchDialog && m_searchDialog->isVisible()) {
+    m_searchDialog->activateWindow();
+    return;
+  }
+  m_searchDialog->show();
 }

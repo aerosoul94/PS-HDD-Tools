@@ -53,6 +53,10 @@ set(SOURCES
   main.cpp
   mainwindow.cpp
   mainwindow.hpp
+  searchdialog.cpp
+  searchdialog.hpp
+  searchthread.cpp
+  searchthread.hpp
   QDiskDevice.cpp
   QDiskDevice.hpp
   QFileDiskStream.cpp

@@ -7,6 +7,8 @@
 
 #include <disk/disk.hpp>
 
+#include "searchdialog.hpp"
+
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
@@ -19,11 +21,15 @@ private:
   QFile* m_imageFile;
 
   Disk* m_disk;
+  Partition* m_partition;
+  bool m_searchDialogOpen;
+  SearchDialog* m_searchDialog;
 
 private slots:
   void slotOpenFile();
   void slotGotoOffset();
   void slotCopyData();
+  void slotFindData();
 };
 
 #endif /* MAINWINDOW_HPP */
