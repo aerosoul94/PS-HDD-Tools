@@ -23,32 +23,34 @@ void DataProvider::setSectorBias(uint32_t sector)
 
 uint64_t DataProvider::read(char* data, uint32_t length)
 {
-  // Seek to a sector aligned offset
-  auto pos = this->stream->tell();
-  auto offset = pos;
-  if (pos % this->sectorSize != 0)
-    offset -= pos % this->sectorSize;
-  this->stream->seek(offset);
+  auto readLen = readInternal(this->tell(), data, length);
+  return readLen;
+}
 
-  // We need an aligned length
-  auto alignedLength = (length + (this->sectorSize - 1)) 
+uint64_t DataProvider::readInternal(uint64_t offset, char* data, uint32_t length)
+{
+  auto alignedOffset = offset;
+
+  // Align our offset to the nearest sector
+  if (alignedOffset % this->sectorSize != 0)
+    alignedOffset -= offset % this->sectorSize;
+
+  this->stream->seek(alignedOffset);
+
+  auto alignedLength = (length + (this->sectorSize - 1))
     & ~(this->sectorSize - 1);
 
-  std::vector<char> tempBuf(alignedLength);
+  std::vector<char> buffer(alignedLength);
 
-  // Proper disk encryption should use a sector index
-  uint32_t sector = this->stream->tell() / this->sectorSize;
+  uint32_t sectorIndex = alignedOffset / this->sectorSize;
 
-  // Need to make sure we don't read past end of stream
-  auto readLen = this->stream->read(tempBuf.data(), alignedLength);
+  auto readLen = this->stream->read(buffer.data(), alignedLength);
 
-  // Decrypt if needed
   if (this->cryptoStrategy)
-    this->cryptoStrategy->decrypt(tempBuf.data(), sector - sectorBias, alignedLength);
+    this->cryptoStrategy->decrypt(buffer.data(), sectorIndex - sectorBias, alignedLength);
 
-  // Only read what we need
-  memcpy(data, tempBuf.data() + (pos - offset), length);
-  
+  memcpy(data, buffer.data() + (offset - alignedOffset), length);
+
   return readLen;
 }
 

@@ -22,11 +22,6 @@ FetchContent_Declare(
 FetchContent_GetProperties(QHexView)
 FetchContent_MakeAvailable(QHexView)
 
-add_library(QHexView
-    ${QHEXVIEW_SOURCES}
-    ${QHEXVIEW_HEADERS}
-)
-
 # For legacy QHexView
 #add_library(QHexView
 #    ${PROJECT_SOURCE_DIR}/QHexView/qhexedit.cpp
@@ -69,7 +64,7 @@ add_executable(hex-viewer ${SOURCES})
 
 target_link_libraries(hex-viewer
   core
-  QHexView  
+  qhexview-lib
   Qt5::Widgets
   Qt5::Core
   Qt5::Gui

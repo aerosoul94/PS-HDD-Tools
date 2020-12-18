@@ -18,34 +18,7 @@ BoundedDataProvider::BoundedDataProvider(
 
 uint64_t BoundedDataProvider::read(char* data, uint32_t length)
 {
-  // TODO: Create a readInternal method so that we don't have to embed
-  //   this code that I copied from DataProvider::read
-
-  // Seek to a sector aligned offset
-  auto pos = this->position;
-  auto offset = pos;
-  if (pos % this->sectorSize != 0)
-    offset -= pos % this->sectorSize;
-  this->stream->seek(this->start + offset);
-
-  // We need an aligned length
-  auto alignedLength = (length + (this->sectorSize - 1)) 
-    & ~(this->sectorSize - 1);
-
-  std::vector<char> tempBuf(alignedLength);
-
-  // Proper disk encryption should use a sector index
-  uint32_t sector = (this->start + offset) / this->sectorSize;
-
-  // Need to make sure we don't read past end of stream
-  auto readLen = this->stream->read(tempBuf.data(), alignedLength);
-
-  // Decrypt if needed
-  if (this->cryptoStrategy)
-    this->cryptoStrategy->decrypt(tempBuf.data(), sector - sectorBias, alignedLength);
-
-  // Only read what we need
-  memcpy(data, tempBuf.data() + (pos - offset), length);
+  auto readLen = readInternal(this->start + this->tell(), data, length);
   this->position += readLen;
   return readLen;
 }

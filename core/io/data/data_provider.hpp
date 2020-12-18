@@ -23,6 +23,8 @@ public:
   uint64_t getLength() const;
   
 protected:
+  virtual uint64_t readInternal(uint64_t offset, char* data, uint32_t length);
+
   DiskStream* stream;
   CryptoStrategy* cryptoStrategy;
   uint32_t sectorSize;
