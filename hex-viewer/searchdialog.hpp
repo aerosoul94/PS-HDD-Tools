@@ -17,7 +17,7 @@ class SearchDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit SearchDialog(DataProvider* dataProvider, 
+  explicit SearchDialog(io::data::DataProvider* dataProvider, 
     QHexCursor* hexCursor, QWidget* parent = nullptr);
   
 private:
@@ -27,7 +27,7 @@ private:
   QPushButton* m_findButton;
   QPushButton* m_cancelButton;
 
-  DataProvider* m_dataProvider;
+  io::data::DataProvider* m_dataProvider;
   QHexCursor* m_hexCursor;
 
   QProgressDialog* m_progressDialog;

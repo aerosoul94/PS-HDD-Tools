@@ -9,14 +9,16 @@
 
 #include <io/data/data_provider.hpp>
 
+namespace formats {
+
 /// Disk builder for PS3
 class CellDiskFormat : public IDiskFormat
 {
 public:
   CellDiskFormat() {}
   
-  bool match(Disk* disk, DiskConfig* config) override;
-  void build(Disk* disk, DiskConfig* config) override;
+  bool match(disk::Disk* disk, disk::DiskConfig* config) override;
+  void build(disk::Disk* disk, disk::DiskConfig* config) override;
 
 private:
   void generateKeys(std::vector<char>& eidRootKey);
@@ -26,5 +28,7 @@ private:
   const uint32_t kSectorSize = 0x200;
   enum class Ps3Type {UNK,PHAT,SLIM/*,ARC*/} type = Ps3Type::UNK;
 };
+
+} /* namespace formats */
 
 #endif /* CELL_FORMAT_HPP */

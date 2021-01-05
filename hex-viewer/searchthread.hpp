@@ -13,7 +13,7 @@ class SearchThread : public QThread
 
 public:
   SearchThread(QByteArray needle, 
-    DataProvider* hayStack, quint64 from, QObject* parent = nullptr);
+    io::data::DataProvider* hayStack, quint64 from, QObject* parent = nullptr);
 
 private:
   void run() override;
@@ -29,7 +29,7 @@ private:
   bool m_canceled = false;
   quint64 m_from;
   QByteArray m_needle;
-  DataProvider* m_hayStack;
+  io::data::DataProvider* m_hayStack;
 };
 
 #endif

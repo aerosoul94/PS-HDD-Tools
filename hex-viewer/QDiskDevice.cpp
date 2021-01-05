@@ -1,6 +1,6 @@
 #include "QDiskDevice.hpp"
 
-QDiskDevice::QDiskDevice(DataProvider* dataProvider)
+QDiskDevice::QDiskDevice(io::data::DataProvider* dataProvider)
 {
   this->dataProvider = dataProvider;
 }

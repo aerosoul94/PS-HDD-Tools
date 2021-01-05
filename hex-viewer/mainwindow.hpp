@@ -20,8 +20,8 @@ private:
   QHexView* m_hexView;
   QFile* m_imageFile;
 
-  Disk* m_disk;
-  Partition* m_partition;
+  disk::Disk* m_disk;
+  disk::Partition* m_partition;
   bool m_searchDialogOpen;
   SearchDialog* m_searchDialog;
 

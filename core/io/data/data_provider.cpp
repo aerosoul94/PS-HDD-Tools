@@ -3,14 +3,17 @@
 #include <crypto/crypto_strategy.hpp>
 #include <io/stream/disk_stream.hpp>
 
-DataProvider::DataProvider(DiskStream* stream, uint32_t sectorSize)
+namespace io {
+namespace data {
+
+DataProvider::DataProvider(stream::DiskStream* stream, uint32_t sectorSize)
   : stream(stream), sectorSize(sectorSize)
 {
   this->cryptoStrategy = nullptr;
   this->sectorBias = 0;
 }
 
-void DataProvider::setCryptoStrategy(CryptoStrategy* strategy)
+void DataProvider::setCryptoStrategy(crypto::CryptoStrategy* strategy)
 {
   this->cryptoStrategy = strategy;
 }
@@ -64,12 +67,12 @@ uint64_t DataProvider::tell()
   return this->stream->tell();
 }
 
-DiskStream* DataProvider::getStream() const
+stream::DiskStream* DataProvider::getStream() const
 {
   return this->stream;
 }
 
-CryptoStrategy* DataProvider::getCryptoMethod() const
+crypto::CryptoStrategy* DataProvider::getCryptoMethod() const
 {
   return this->cryptoStrategy;
 }
@@ -78,3 +81,6 @@ uint64_t DataProvider::getLength() const
 {
   return this->stream->getLength();
 }
+
+} /* namespace data */
+} /* namespace io */

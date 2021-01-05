@@ -2,8 +2,8 @@
 
 #include <QDebug>
 
-SearchThread::SearchThread(QByteArray needle, DataProvider* hayStack, quint64 from, QObject* parent)
-  : QThread(parent)
+SearchThread::SearchThread(QByteArray needle, io::data::DataProvider* hayStack, 
+  quint64 from, QObject* parent) : QThread(parent)
 {
   this->m_needle = needle;
   this->m_hayStack = hayStack;

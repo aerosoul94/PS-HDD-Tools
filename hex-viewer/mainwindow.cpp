@@ -75,12 +75,12 @@ void MainWindow::slotOpenFile()
   keyFile->open(QIODevice::ReadOnly);
   auto keyLen = keyFile->size();
   
-  DiskConfig config;
+  disk::DiskConfig config;
   config.setStream(stream);
   config.setKeys(keyFile->readAll().data(), keyLen);
   keyFile->close();
 
-  m_disk = DiskFormatFactory::getInstance()->detectFormat(&config);
+  m_disk = formats::DiskFormatFactory::getInstance()->detectFormat(&config);
   if (!m_disk) {
     QMessageBox::warning(this, tr("Cannot load disk"),
       tr("Disk format not recognized."));

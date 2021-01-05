@@ -5,6 +5,9 @@
 
 #include <fstream>
 
+namespace io {
+namespace stream {
+
 /// Standard file stream handler
 class FileDiskStream : public DiskStream
 {
@@ -20,5 +23,8 @@ private:
   std::ifstream& stream;
   uint64_t length;
 };
+
+} /* namespace stream */
+} /* namespace io */
 
 #endif /* FILE_DISK_STREAM_HPP */

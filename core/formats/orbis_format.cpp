@@ -8,7 +8,9 @@
 #include <disk/disk.hpp>
 #include <disk/partition.hpp>
 
-bool OrbisDiskFormat::match(Disk* disk, DiskConfig* config)
+namespace formats {
+
+bool OrbisDiskFormat::match(disk::Disk* disk, disk::DiskConfig* config)
 {
   auto keyData = config->getKeys();
   auto dataProvider = disk->getDataProvider();
@@ -39,7 +41,7 @@ bool OrbisDiskFormat::verifyGptHeader()
   return true;
 }
 
-void OrbisDiskFormat::build(Disk* disk, DiskConfig* config)
+void OrbisDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
 {
   auto dataProvider = disk->getDataProvider();
   this->loadGptEntTable(dataProvider);
@@ -55,7 +57,7 @@ void OrbisDiskFormat::build(Disk* disk, DiskConfig* config)
   auto partitionDataProvider = partition->getDataProvider();
   partitionDataProvider->setSectorBias(ent->lba_start);
   partitionDataProvider->setCryptoStrategy(
-    new AesXtsStrategy(keys.data(), keys.data() + 0x10)
+    new crypto::AesXtsStrategy(keys.data(), keys.data() + 0x10)
   );
 
   // Some partitions use different keys
@@ -69,7 +71,7 @@ void OrbisDiskFormat::build(Disk* disk, DiskConfig* config)
   // }
 }
 
-void OrbisDiskFormat::loadGptEntTable(DataProvider* dataProvider)
+void OrbisDiskFormat::loadGptEntTable(io::data::DataProvider* dataProvider)
 {
   const uint64_t offset = hdr.lba_table * kSectorSize;
   dataProvider->seek(offset);
@@ -85,3 +87,5 @@ const gpt_ent* OrbisDiskFormat::getGptEntByType(const uuid* type)
       return &ent;
   return nullptr;
 }
+
+} /* namespace formats */

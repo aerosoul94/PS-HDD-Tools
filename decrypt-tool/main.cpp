@@ -8,7 +8,7 @@
 #include <fstream>
 #include <vector>
 
-void writePartitionToFile(Partition* partition, std::ofstream& file)
+void writePartitionToFile(disk::Partition* partition, std::ofstream& file)
 {
   const uint32_t kBufSize = 0x200 * 0x800;
   std::vector<char> buf(kBufSize);
@@ -24,7 +24,7 @@ void writePartitionToFile(Partition* partition, std::ofstream& file)
   }
 }
 
-void buildConfig(DiskConfig* config, std::ifstream& imageFile, std::ifstream& keyFile)
+void buildConfig(disk::DiskConfig* config, std::ifstream& imageFile, std::ifstream& keyFile)
 {
   keyFile.seekg(0, std::ios::end);
   auto keyLen = keyFile.tellg();
@@ -34,7 +34,7 @@ void buildConfig(DiskConfig* config, std::ifstream& imageFile, std::ifstream& ke
   keyFile.read(keyData.data(), keyLen);
 
   config->setKeys(keyData.data(), keyLen);
-  config->setStream(new FileDiskStream(imageFile));
+  config->setStream(new io::stream::FileDiskStream(imageFile));
 }
 
 int main(int argc, char** argv)
@@ -63,10 +63,10 @@ int main(int argc, char** argv)
     return 0;
   }
 
-  DiskConfig config;
+  disk::DiskConfig config;
   buildConfig(&config, imageFile, keyFile);
 
-  Disk* disk = DiskFormatFactory::getInstance()->detectFormat(&config);
+  disk::Disk* disk = formats::DiskFormatFactory::getInstance()->detectFormat(&config);
   if (!disk) {
     std::cout << "Could not detect disk format" << std::endl;
     return 0;

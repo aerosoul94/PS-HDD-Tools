@@ -6,6 +6,8 @@
 
 #include "disk_format.hpp"
 
+namespace formats {
+
 /// Disk format detection service
 class DiskFormatFactory
 {
@@ -14,8 +16,10 @@ public:
   DiskFormatFactory();
 
   static DiskFormatFactory* getInstance();
-  Disk* detectFormat(DiskConfig* config);
+  disk::Disk* detectFormat(disk::DiskConfig* config);
   void registerFormat(IDiskFormat* format);
 };
+
+} /* namespace formats */
 
 #endif /* DISK_FORMAT_FACTORY_HPP */

@@ -1,5 +1,8 @@
 #include "file_disk_stream.hpp"
 
+namespace io {
+namespace stream {
+
 FileDiskStream::FileDiskStream(std::ifstream& file)
   : stream(file)
 {
@@ -28,3 +31,6 @@ uint64_t FileDiskStream::getLength() const
 {
   return this->length;
 }
+
+} /* namespace stream */
+} /* namespace io */

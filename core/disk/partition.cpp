@@ -3,9 +3,11 @@
 
 #include <io/data/bounded_data_provider.hpp>
 
+namespace disk {
+
 Partition::Partition(Disk* disk, uint64_t start, uint64_t length)
 {
-  this->dataProvider = new BoundedDataProvider(
+  this->dataProvider = new io::data::BoundedDataProvider(
     disk->getDataProvider(), start, length, disk->getSectorSize());
   this->start = start;
   this->end = start + length;
@@ -17,7 +19,7 @@ Partition::~Partition()
   delete this->dataProvider;
 }
 
-DataProvider* Partition::getDataProvider()
+io::data::DataProvider* Partition::getDataProvider()
 {
   return this->dataProvider;
 }
@@ -36,3 +38,5 @@ uint64_t Partition::getEnd() const
 {
   return this->end;
 }
+
+} /* namespace disk */

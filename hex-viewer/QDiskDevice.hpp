@@ -8,9 +8,9 @@
 /// A QIODevice adapter for DataProvider
 class QDiskDevice : public QIODevice
 {
-  DataProvider* dataProvider;
+  io::data::DataProvider* dataProvider;
 public:
-  explicit QDiskDevice(DataProvider*);
+  explicit QDiskDevice(io::data::DataProvider*);
   qint64 readData(char* data, qint64 maxSize) override;
   qint64 writeData(const char* data, qint64 maxSize) override;
   bool seek(qint64 pos) override;

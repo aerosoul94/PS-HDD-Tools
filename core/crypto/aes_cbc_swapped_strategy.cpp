@@ -2,6 +2,8 @@
 #include "aes/aes.h"
 #include <utilities/endian.hpp>
 
+namespace crypto {
+
 AesCbcSwappedStrategy::AesCbcSwappedStrategy(std::vector<char>& keyData)
 {
   aes_setkey_dec(&aes, reinterpret_cast<uint8_t*>(keyData.data()), 192);
@@ -25,3 +27,5 @@ void AesCbcSwappedStrategy::swapWords(char* data, uint32_t length)
   for (uint32_t i = 0; i < length / 2; i++)
     ((uint16_t*)data)[i] = swap16(((uint16_t*)data)[i]);
 }
+
+} /* namespace crypto */

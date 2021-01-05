@@ -2,6 +2,8 @@
 
 #include <utilities/endian.hpp>
 
+namespace crypto {
+
 AesXtsSwappedStrategy::AesXtsSwappedStrategy(char* key, char* tweak)
 {
   aes_xts_init(&xts_ctxt, AES_DECRYPT, 
@@ -29,3 +31,5 @@ void AesXtsSwappedStrategy::swapWords(char* data, uint32_t length)
   for (uint32_t i = 0; i < length / 2; i++)
     ((uint16_t*)data)[i] = swap16(((uint16_t*)data)[i]);
 }
+
+} /* namespace crypto */

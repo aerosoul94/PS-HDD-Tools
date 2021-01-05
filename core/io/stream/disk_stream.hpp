@@ -3,6 +3,9 @@
 
 #include <vector>
 
+namespace io {
+namespace stream {
+
 /// Abstract interface for a disk stream
 class DiskStream
 {
@@ -12,5 +15,8 @@ public:
   virtual uint64_t tell() = 0;
   virtual uint64_t getLength() const = 0;
 };
+
+} /* namespace stream */
+} /* namespace io */
 
 #endif /* DISK_STREAM_HPP */

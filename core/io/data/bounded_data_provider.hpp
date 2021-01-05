@@ -3,6 +3,9 @@
 
 #include "data_provider.hpp"
 
+namespace io {
+namespace data {
+
 /// A DataProvider with boundaries (a sub stream)
 class BoundedDataProvider : public DataProvider
 {
@@ -21,5 +24,8 @@ private:
   uint64_t end;
   uint64_t length;
 };
+
+} /* namespace data */
+} /* namespace io */
 
 #endif /* BOUNDED_DATA_PROVIDER_HPP */

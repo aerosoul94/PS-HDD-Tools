@@ -6,6 +6,8 @@
 #include "crypto_strategy.hpp"
 #include "aes/aes_xts.h"
 
+namespace crypto {
+
 /// AES-XTS
 class AesXtsStrategy : public CryptoStrategy
 {
@@ -18,5 +20,7 @@ private:
   aes_xts_ctxt_t xts_ctxt;
   const uint32_t kSectorSize = 0x200;
 };
+
+} /* namespace crypto */
 
 #endif /* AES_XTS_STRATEGY_HPP */

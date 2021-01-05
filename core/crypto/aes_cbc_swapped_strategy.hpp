@@ -6,6 +6,8 @@
 #include "crypto_strategy.hpp"
 #include "aes/aes.h"
 
+namespace crypto {
+
 /// AES-CBC-192 with swapped halfwords
 class AesCbcSwappedStrategy : public CryptoStrategy
 {
@@ -20,5 +22,7 @@ private:
   aes_context aes;
   const uint32_t kSectorSize = 0x200;
 };
+
+} /* namespace crypto */
 
 #endif /* AES_CBC_SWAPPED_STRATEGY_HPP */

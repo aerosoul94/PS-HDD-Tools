@@ -1,9 +1,11 @@
 #include "disk.hpp"
 #include "partition.hpp"
 
-Disk::Disk(DiskStream* stream, uint32_t sectorSize)
+namespace disk {
+
+Disk::Disk(io::stream::DiskStream* stream, uint32_t sectorSize)
 {
-  this->dataProvider = new DataProvider(stream, sectorSize);
+  this->dataProvider = new io::data::DataProvider(stream, sectorSize);
   this->sectorSize = sectorSize;
 }
 
@@ -15,7 +17,7 @@ Disk::~Disk()
   partitions.clear();
 }
 
-DataProvider* Disk::getDataProvider()
+io::data::DataProvider* Disk::getDataProvider()
 {
   return this->dataProvider;
 }
@@ -35,3 +37,5 @@ uint32_t Disk::getSectorSize() const
 {
   return this->sectorSize;
 }
+
+} /* namespace disk */

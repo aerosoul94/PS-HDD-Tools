@@ -9,6 +9,8 @@
 #include <iostream>
 #include <iomanip>
 
+namespace formats {
+
 static uint8_t encdec_seed_00[] =
 {
   0xE2, 0xD0, 0x5D, 0x40, 0x71, 0x94, 0x5B, 0x01, 
@@ -41,7 +43,7 @@ static uint8_t sb_indiv_seed_20[] =
   0xEE, 0xDE, 0x07, 0x05, 0x8E, 0x94, 0xBE, 0x08
 };
 
-bool CellDiskFormat::match(Disk* disk, DiskConfig* config)
+bool CellDiskFormat::match(disk::Disk* disk, disk::DiskConfig* config)
 {
   auto keyData = config->getKeys();
   auto dataProvider = disk->getDataProvider();
@@ -58,7 +60,7 @@ bool CellDiskFormat::match(Disk* disk, DiskConfig* config)
   this->type = Ps3Type::PHAT;
   dataProvider->seek(0);
   dataProvider->setCryptoStrategy(
-    new AesCbcSwappedStrategy(ataKeys)
+    new crypto::AesCbcSwappedStrategy(ataKeys)
   );
   dataProvider->read(buf.data(), kSectorSize);
   disklabel* hdr = reinterpret_cast<disklabel*>(buf.data());
@@ -68,7 +70,7 @@ bool CellDiskFormat::match(Disk* disk, DiskConfig* config)
   this->type = Ps3Type::SLIM;
   dataProvider->seek(0);
   dataProvider->setCryptoStrategy(
-    new AesXtsSwappedStrategy(ataKeys.data(), ataKeys.data() + 0x20)
+    new crypto::AesXtsSwappedStrategy(ataKeys.data(), ataKeys.data() + 0x20)
   );
   dataProvider->read(buf.data(), kSectorSize);
   if (swap64(hdr->d_magic1) == MAGIC1 && swap64(hdr->d_magic2) == MAGIC2)
@@ -121,7 +123,7 @@ void CellDiskFormat::generateKeys(std::vector<char>& eidRootKey)
   );
 }
 
-void CellDiskFormat::build(Disk* disk, DiskConfig* config)
+void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
 {
   auto dataProvider = disk->getDataProvider();
   dataProvider->seek(0);
@@ -160,3 +162,5 @@ void CellDiskFormat::build(Disk* disk, DiskConfig* config)
     swap64(hdd0->p_size) * kSectorSize
   );
 }
+
+} /* namespace formats */

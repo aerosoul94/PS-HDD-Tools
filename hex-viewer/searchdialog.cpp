@@ -8,7 +8,7 @@
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
 
-SearchDialog::SearchDialog(DataProvider* dataProvider, 
+SearchDialog::SearchDialog(io::data::DataProvider* dataProvider, 
   QHexCursor* hexCursor, QWidget* parent) : QDialog(parent)
 {
   m_dataProvider = dataProvider;

@@ -6,7 +6,7 @@
 #include <QFile>
 
 /// A DiskStream adapter for QFile
-class QFileDiskStream : public DiskStream
+class QFileDiskStream : public io::stream::DiskStream
 {
   QFile* file;
 public:

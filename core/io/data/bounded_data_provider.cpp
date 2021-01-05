@@ -2,6 +2,9 @@
 
 #include <stdexcept>
 
+namespace io {
+namespace data {
+
 BoundedDataProvider::BoundedDataProvider(
   DataProvider* base,   // Parent data provider
   uint64_t start,       // Offset in bytes to start of boundary
@@ -66,3 +69,6 @@ uint64_t BoundedDataProvider::getLength()
 {
   return this->length;
 }
+
+} /* namespace data */
+} /* namespace io */

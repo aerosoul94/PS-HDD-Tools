@@ -2,6 +2,8 @@
 
 #include <utilities/endian.hpp>
 
+namespace crypto {
+
 AesXtsStrategy::AesXtsStrategy(char* key, char* tweak)
 {
   aes_xts_init(&xts_ctxt, AES_DECRYPT, 
@@ -22,3 +24,5 @@ void AesXtsStrategy::decrypt(char* data, uint32_t sector, uint32_t length)
     }
   }
 }
+
+} /* namespace crypto */
