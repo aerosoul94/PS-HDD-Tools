@@ -74,6 +74,7 @@ int main(int argc, char** argv)
 
   if (!disk->getPartitions().size()) {
     std::cout << "Could not find any partitions in this disk" << std::endl;
+    return 0;
   }
 
   std::ofstream outputFile;
