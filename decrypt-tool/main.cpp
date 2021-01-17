@@ -47,8 +47,6 @@ int main(int argc, char** argv)
     return 0;
   }
 
-  std::string outputPath(argv[3]);
-
   std::ifstream imageFile;
   imageFile.open(argv[1], std::ios::binary);
   if (!imageFile.is_open()) {
