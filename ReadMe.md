@@ -25,6 +25,13 @@ Hex viewer that allows you to view decrypted contents of an HDD image.
 
 You can go to any offset by pressing `CTRL + G` and entering either a decimal value or a hexadecimal value beginning with "0x".
 
+## Mount Tool
+This tool demonstrates usage of the virtual file system and simply prints out the contents of each file system. Eventually more functionality will be added.
+### Usage
+```
+mount-tool <input image> <key file>
+```
+
 # Todo
 - Decrypt second layer of encryption for vflash (PS3)
 - Add support for arcade hdd's
