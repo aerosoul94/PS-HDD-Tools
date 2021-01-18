@@ -12,11 +12,22 @@ Partition::Partition(Disk* disk, uint64_t start, uint64_t length)
   this->start = start;
   this->end = start + length;
   this->length = length;
+  this->vfs = new vfs::Vfs;
 }
 
 Partition::~Partition()
 {
   delete this->dataProvider;
+}
+
+void Partition::mount()
+{
+  this->vfs->mount();
+}
+
+vfs::Vfs* Partition::getVfs()
+{
+  return vfs;
 }
 
 io::data::DataProvider* Partition::getDataProvider()

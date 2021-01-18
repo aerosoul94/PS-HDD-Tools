@@ -5,6 +5,7 @@
 #include <crypto/aes/aes.h>
 #include <utilities/endian.hpp>
 #include <disk/partition.hpp>
+#include <vfs/adapters/ufs2_adapter.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -157,9 +158,13 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
   }
 
   // No need to set crypto method as it inherits from the base
-  disk->addPartition(
+  auto partition = disk->addPartition(
     swap64(hdd0->p_start) * kSectorSize, 
     swap64(hdd0->p_size) * kSectorSize
+  );
+  
+  partition->getVfs()->setAdapter(
+    new vfs::adapters::Ufs2Adapter(partition->getDataProvider(), true)
   );
 }
 

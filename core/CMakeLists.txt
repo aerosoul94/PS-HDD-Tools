@@ -8,6 +8,8 @@ file(GLOB SRC_FILES
   ${PROJECT_SOURCE_DIR}/core/io/data/*.cpp
   ${PROJECT_SOURCE_DIR}/core/io/stream/*.cpp
   ${PROJECT_SOURCE_DIR}/core/logging/*.cpp
+  ${PROJECT_SOURCE_DIR}/core/vfs/*.cpp
+  ${PROJECT_SOURCE_DIR}/core/vfs/adapters/*.cpp
 )
 
 include_directories(${PROJECT_SOURCE_DIR}/core)

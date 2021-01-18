@@ -7,6 +7,7 @@
 #include <io/data/data_provider.hpp>
 #include <disk/disk.hpp>
 #include <disk/partition.hpp>
+#include <vfs/adapters/ufs2_adapter.hpp>
 
 namespace formats {
 
@@ -58,6 +59,10 @@ void OrbisDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
   partitionDataProvider->setSectorBias(ent->lba_start);
   partitionDataProvider->setCryptoStrategy(
     new crypto::AesXtsStrategy(keys.data(), keys.data() + 0x10)
+  );
+
+  partition->getVfs()->setAdapter(
+    new vfs::adapters::Ufs2Adapter(partition->getDataProvider())
   );
 
   // Some partitions use different keys
