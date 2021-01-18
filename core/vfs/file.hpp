@@ -11,7 +11,19 @@ public:
   VfsFile();
 
   //VfsFileStream* getStream();
+
+  /**
+   * @brief Set this file's size.
+   * 
+   * @param size The file size.
+   */
   void setFileSize(uint64_t size);
+
+  /**
+   * @brief Get this file's size.
+   * 
+   * @return uint64_t The file size.
+   */
   uint64_t getFileSize() const;
 
 private:

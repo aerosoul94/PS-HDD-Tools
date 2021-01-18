@@ -11,9 +11,31 @@ class Vfs
 public:
   Vfs();
 
+  /**
+   * @brief Mount the file system.
+   */
   void mount();
+
+  /**
+   * @brief Get the root directory for this file system.
+   * 
+   * @return VfsDirectory* 
+   */
   VfsDirectory* getRoot() const;
+
+  /**
+   * @brief Set the adapter to use to mount the file system.
+   * 
+   * @param adapter 
+   */
   void setAdapter(VfsAdapter* adapter);
+
+  /**
+   * @brief Check if this file system is currently mounted.
+   * 
+   * @return true 
+   * @return false 
+   */
   bool isMounted() const;
 
 private:

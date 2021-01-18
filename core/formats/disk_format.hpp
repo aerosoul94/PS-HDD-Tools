@@ -15,7 +15,23 @@ namespace formats {
 class IDiskFormat
 {
 public:
+  /**
+   * @brief This method should return whether or not the disk matches a disk 
+   * format.
+   * 
+   * @param disk The input device.
+   * @param config Disk information provided by the user.
+   * @return true If the disk format has been detected.
+   * @return false If the disk format was not detected.
+   */
   virtual bool match(disk::Disk* disk, disk::DiskConfig* config) = 0;
+
+  /**
+   * @brief This method builds the Disk object.
+   * 
+   * @param disk The input disk context.
+   * @param config Disk information provided by the user.
+   */
   virtual void build(disk::Disk* disk, disk::DiskConfig* config) = 0;
 };
 

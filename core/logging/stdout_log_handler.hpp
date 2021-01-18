@@ -5,6 +5,9 @@
 
 namespace logging {
 
+/**
+ * @brief Log handler that prints to stdout.
+ */
 class StdOutLogHandler : public ILogHandler
 {
 public:

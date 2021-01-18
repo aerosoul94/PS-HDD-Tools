@@ -16,7 +16,20 @@ public:
   DiskFormatFactory();
 
   static DiskFormatFactory* getInstance();
+
+  /**
+   * @brief Try and detect the disk format.
+   * 
+   * @param config 
+   * @return disk::Disk* 
+   */
   disk::Disk* detectFormat(disk::DiskConfig* config);
+
+  /**
+   * @brief Register a disk format.
+   * 
+   * @param format 
+   */
   void registerFormat(IDiskFormat* format);
 };
 

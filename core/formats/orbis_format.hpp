@@ -6,7 +6,9 @@
 
 namespace formats {
 
-/// Disk builder for PS4
+/**
+ * @brief Detects and loads the PS4 disk format.
+ */
 class OrbisDiskFormat : public IDiskFormat
 {
 public:
@@ -16,8 +18,27 @@ public:
   void build(disk::Disk*, disk::DiskConfig*) override;
 
 private:
+  /**
+   * @brief Verify that this is a GPT header.
+   * 
+   * @return true 
+   * @return false 
+   */
   bool verifyGptHeader();
+
+  /**
+   * @brief Load the GPT Entry Table from the disk.
+   * 
+   * @param dataProvider 
+   */
   void loadGptEntTable(io::data::DataProvider* dataProvider);
+
+  /**
+   * @brief Get the a GPT Entry by its type from the GPT Ent Table.
+   * 
+   * @param type 
+   * @return const gpt_ent* 
+   */
   const gpt_ent* getGptEntByType(const uuid* type);
   
   gpt_hdr hdr;

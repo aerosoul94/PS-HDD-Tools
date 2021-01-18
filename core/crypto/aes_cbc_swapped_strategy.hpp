@@ -8,7 +8,10 @@
 
 namespace crypto {
 
-/// AES-CBC-192 with swapped halfwords
+/**
+ * @brief A crypto strategy that uses AES-CBC with 16-bit endian swaps.
+ * 
+ */
 class AesCbcSwappedStrategy : public CryptoStrategy
 {
 public:

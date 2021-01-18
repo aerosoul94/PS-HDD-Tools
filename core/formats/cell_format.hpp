@@ -11,7 +11,9 @@
 
 namespace formats {
 
-/// Disk builder for PS3
+/**
+ * @brief Detects and loads the PS3 disk format.
+ */
 class CellDiskFormat : public IDiskFormat
 {
 public:
@@ -21,6 +23,11 @@ public:
   void build(disk::Disk* disk, disk::DiskConfig* config) override;
 
 private:
+  /**
+   * @brief Generate crypto keys from an eid root key.
+   * 
+   * @param eidRootKey 
+   */
   void generateKeys(std::vector<char>& eidRootKey);
 
   std::vector<char> ataKeys;

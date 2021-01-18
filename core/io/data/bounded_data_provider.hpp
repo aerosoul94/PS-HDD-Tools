@@ -6,7 +6,11 @@
 namespace io {
 namespace data {
 
-/// A DataProvider with boundaries (a sub stream)
+/**
+ * @brief DataProvider with boundaries.
+ * 
+ * This creates a sub-view of a parent DataProvider.
+ */
 class BoundedDataProvider : public DataProvider
 {
 public:

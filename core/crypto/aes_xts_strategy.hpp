@@ -8,7 +8,9 @@
 
 namespace crypto {
 
-/// AES-XTS
+/**
+ * @brief A crypto strategy that uses AES-XTS.
+ */
 class AesXtsStrategy : public CryptoStrategy
 {
 public:

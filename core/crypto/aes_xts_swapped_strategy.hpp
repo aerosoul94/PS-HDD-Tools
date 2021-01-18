@@ -8,7 +8,9 @@
 
 namespace crypto {
 
-/// AES-XTS with swapped halfwords
+/**
+ * @brief A crypto strategy that uses AES-XTS with 16 bit endian swapping.
+ */
 class AesXtsSwappedStrategy : public CryptoStrategy
 {
 public:

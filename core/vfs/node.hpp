@@ -17,24 +17,58 @@ class VfsNode
 public:
   VfsNode(VfsNodeType type);
 
-  /// Get whether this is a file or a directory.
+  /**
+   * @brief Get the type of node this is. See VfsNodeType.
+   * 
+   * @return VfsNodeType 
+   */
   VfsNodeType getType() const;
-  /// Get the name of this node. 
-  /// This would represent the file or directory's name.
+  
+  /**
+   * @brief Get the name of this node.
+   * 
+   * This should represent the file or directory name.
+   * 
+   * @return std::string 
+   */
   std::string getName() const;
-  /// Get a list of block indexes that contain this node's data.
-  /// For FATX, this would represent the nodes's cluster chain.
-  /// For UFS2, this would come from di_db and di_ib block lists.
+  
+  /**
+   * @brief Get a list of block indexes that form this node's data.
+   * 
+   * @return std::vector<uint64_t> 
+   */
   std::vector<uint64_t> getBlockIndexes() const;
 
-  void setFlags();
-
+  /**
+   * @brief Set this node's name.
+   * 
+   * This should be set to the file or directory name.
+   * 
+   * @param name 
+   */
   void setName(std::string name);
 
+  /**
+   * @brief Set the last access time for this node.
+   */
   void setLastAccessTime();
+
+  /**
+   * @brief Set the last modified time for this node.
+   */
   void setLastModifiedTime();
+
+  /**
+   * @brief Set the creation time for this node.
+   */
   void setCreationTime();
 
+  /**
+   * @brief Set this node's parent node.
+   * 
+   * @param parent The parent node.
+   */
   void setParent(VfsNode* parent);
 
 protected:

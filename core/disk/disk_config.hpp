@@ -13,9 +13,31 @@ class DiskConfig final
 public:
   DiskConfig() {}
 
+  /**
+   * @brief Set the DiskStream.
+   */
   void setStream(io::stream::DiskStream*);
+
+  /**
+   * @brief Use this to provide the disk crypto keys.
+   * 
+   * @param data The crypto key data.
+   * @param length The length of the crypto key data.
+   */
   void setKeys(const char* data, uint32_t length);
+
+  /**
+   * @brief Get the crypto key data.
+   * 
+   * @return std::vector<char> 
+   */
   std::vector<char> getKeys() const;
+
+  /**
+   * @brief Get the DiskStream.
+   * 
+   * @return io::stream::DiskStream* 
+   */
   io::stream::DiskStream* getStream() const;
 
 private:
