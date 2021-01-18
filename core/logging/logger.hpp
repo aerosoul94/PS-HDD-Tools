@@ -6,16 +6,16 @@
 
 /// Add a log handler to the logger.
 #define rAddHandler(name, handler) \
-  logging::Logger::getInstance()->addHandler(name, handler)
+  logging::LogManager::getInstance()->addHandler(name, handler)
 
 /// Print an info message.
-#define rInfo(msg)  logging::Logger::getInstance()->info(msg)
+#define rInfo(msg)  logging::LogManager::getInstance()->info(msg)
 /// Print a warning message.
-#define rWarn(msg)  logging::Logger::getInstance()->warn(msg)
+#define rWarn(msg)  logging::LogManager::getInstance()->warn(msg)
 /// Print an error message.
-#define rError(msg) logging::Logger::getInstance()->error(msg)
+#define rError(msg) logging::LogManager::getInstance()->error(msg)
 /// Print a debug message.
-#define rDebug(msg) logging::Logger::getInstance()->debug(msg)
+#define rDebug(msg) logging::LogManager::getInstance()->debug(msg)
 
 namespace logging {
 
@@ -30,7 +30,7 @@ enum class LogLevel
 /**
  * @brief An interface for a log handler.
  * 
- * Implement this interface, then add it to the Logger.
+ * Implement this interface, then add it to the LogManager.
  */
 class ILogHandler
 {
@@ -85,10 +85,10 @@ private:
   LogLevel level;
 };
 
-class Logger
+class LogManager
 {
 public:
-  static Logger* getInstance();
+  static LogManager* getInstance();
 
   /**
    * @brief Add a log handler.

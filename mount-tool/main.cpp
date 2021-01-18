@@ -49,12 +49,11 @@ int main(int argc, char** argv)
     return 0;
   }
 
-  auto log = logging::Logger::getInstance();
   auto logger = new logging::StdOutLogHandler;
 #ifndef NDEBUG
   logger->setLogLevel(logging::LogLevel::Debug);
 #endif
-  log->addHandler("stdout", logger);
+  rAddHandler("stdout", logger);
 
   std::ifstream imageFile;
   imageFile.open(argv[1], std::ios::binary);

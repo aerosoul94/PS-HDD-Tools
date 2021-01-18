@@ -12,7 +12,7 @@ namespace data {
 /**
  * @brief Provides data from the disk.
  * 
- * This data provider takes an input `DiskStream` which is what is used to
+ * This data provider takes an input `DiskStream` which is what is used to 
  * access raw data from a disk and uses an optional `CryptoStrategy` to provide 
  * post/pre processing. It also ensures that data is read using sector aligned 
  * reads.
