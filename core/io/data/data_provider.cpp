@@ -72,7 +72,7 @@ stream::DiskStream* DataProvider::getStream() const
   return this->stream;
 }
 
-crypto::CryptoStrategy* DataProvider::getCryptoMethod() const
+crypto::CryptoStrategy* DataProvider::getCryptoStrategy() const
 {
   return this->cryptoStrategy;
 }

@@ -66,7 +66,7 @@ public:
    * 
    * @return crypto::CryptoStrategy* 
    */
-  crypto::CryptoStrategy* getCryptoMethod() const;
+  crypto::CryptoStrategy* getCryptoStrategy() const;
 
   /**
    * @brief Get the raw input disk stream.

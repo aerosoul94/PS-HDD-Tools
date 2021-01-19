@@ -13,7 +13,7 @@ BoundedDataProvider::BoundedDataProvider(
   : DataProvider(base->getStream(), sectorSize)
 {
   this->position = 0;
-  this->cryptoStrategy = base->getCryptoMethod();
+  this->cryptoStrategy = base->getCryptoStrategy();
   this->start = start;
   this->end = start + length;
   this->length = length;
