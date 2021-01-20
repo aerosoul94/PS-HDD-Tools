@@ -301,7 +301,7 @@ void Ufs2Adapter::swapSuperblock(fs* superblock)
   _swap32(superblock->fs_old_nrpos);
   _swap32(superblock->fs_spare5[0]);
   _swap32(superblock->fs_spare5[1]);
-  //_swap32(superblock->fs_magic);
+  _swap32(superblock->fs_magic);
 }
 
 } /* namespace adapters */
