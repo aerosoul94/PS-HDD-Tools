@@ -67,7 +67,8 @@ void MainWindow::populateExplorer(QFile* imageFile, QFile* keyFile)
   auto root = vfs->getRoot();
 
   m_treeViewModel = new QStandardItemModel;
-  QStandardItem* item = new QStandardItem("/");
+  QStandardItem* item = new QStandardItem(m_partition->getName().c_str());
+  item->setIcon(QApplication::style()->standardIcon(QStyle::SP_DriveHDIcon));
   m_treeViewModel->appendRow(item);
 
   populateTreeView(item, root);

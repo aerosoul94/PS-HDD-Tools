@@ -163,6 +163,7 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
     swap64(hdd0->p_size) * kSectorSize
   );
   
+  partition->setName("dev_hdd0");
   partition->getVfs()->setAdapter(
     new vfs::adapters::Ufs2Adapter(partition->getDataProvider(), true)
   );

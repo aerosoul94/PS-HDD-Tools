@@ -25,6 +25,16 @@ void Partition::mount()
   this->vfs->mount();
 }
 
+const std::string Partition::getName()
+{
+  return this->name;
+}
+
+void Partition::setName(std::string name)
+{
+  this->name = name;
+}
+
 vfs::Vfs* Partition::getVfs()
 {
   return vfs;

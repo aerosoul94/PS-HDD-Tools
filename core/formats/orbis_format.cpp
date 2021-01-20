@@ -61,6 +61,7 @@ void OrbisDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
     new crypto::AesXtsStrategy(keys.data(), keys.data() + 0x10)
   );
 
+  partition->setName("user");
   partition->getVfs()->setAdapter(
     new vfs::adapters::Ufs2Adapter(partition->getDataProvider())
   );
