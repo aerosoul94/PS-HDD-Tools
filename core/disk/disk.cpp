@@ -27,6 +27,14 @@ const std::vector<Partition*>& Disk::getPartitions() const
   return this->partitions;
 }
 
+Partition* Disk::getPartitionByName(std::string& name) const
+{
+  for (auto partition : partitions) {
+    if (partition->getName() == name)
+      return partition;
+  }
+}
+
 Partition* Disk::addPartition(uint64_t start, uint64_t length)
 {
   this->partitions.push_back(new Partition(this, start, length));

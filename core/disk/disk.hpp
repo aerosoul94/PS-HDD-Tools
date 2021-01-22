@@ -2,6 +2,7 @@
 #define DISK_HPP
 
 #include <vector>
+#include <string>
 
 #include <io/data/data_provider.hpp>
 
@@ -31,6 +32,14 @@ public:
    * @return const std::vector<Partition*>& 
    */
   const std::vector<Partition*>& getPartitions() const;
+
+  /**
+   * @brief Get a partition by its name.
+   * 
+   * @param name The name of the partition.
+   * @return Partition* 
+   */
+  Partition* getPartitionByName(std::string& name) const;
 
   /**
    * @brief Add a Partition into this disk.
