@@ -1,8 +1,12 @@
 #include "cell_format.hpp"
 
+#include <crypto/aes/aes.h>
+#include <crypto/crypto_strategy.hpp>
+#include <crypto/aes_cbc_strategy.hpp>
+#include <crypto/aes_xts_strategy.hpp>
 #include <crypto/aes_cbc_swapped_strategy.hpp>
 #include <crypto/aes_xts_swapped_strategy.hpp>
-#include <crypto/aes/aes.h>
+#include <crypto/multi_layer_strategy.hpp>
 #include <utilities/endian.hpp>
 #include <disk/partition.hpp>
 #include <vfs/adapters/ufs2_adapter.hpp>
@@ -132,7 +136,9 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
   dataProvider->read(buf.data(), 0x1000);
 
   auto table = reinterpret_cast<d_partition*>(buf.data() + sizeof(disklabel));
-  d_partition* vflash,* hdd0,* hdd1;
+  d_partition* vflash = nullptr,
+    * hdd0 = nullptr,
+    * hdd1 = nullptr;
   switch (type) {
     case Ps3Type::SLIM:
       vflash = &table[0];
@@ -156,17 +162,81 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
     default:
       return;
   }
-
-  // No need to set crypto method as it inherits from the base
-  auto partition = disk->addPartition(
-    swap64(hdd0->p_start) * kSectorSize, 
-    swap64(hdd0->p_size) * kSectorSize
-  );
   
-  partition->setName("dev_hdd0");
-  partition->getVfs()->setAdapter(
-    new vfs::adapters::Ufs2Adapter(partition->getDataProvider(), true)
-  );
+  if (vflash)
+  {
+    // vflash has multiple partitions of its own..
+    // [0] = ?
+    // [1] = dev_flash  FAT16
+    // [2] = dev_flash2 FAT16
+    // [3] = dev_flash3 FAT12
+    // [4] = dev_flash4 
+
+    // auto vflashView = disk->addPartition(
+    //   swap64(vflash->p_start) * kSectorSize,
+    //   swap64(vflash->p_size) * kSectorSize
+    // );
+
+    // vflashView->setName("dev_flash");
+
+    // auto strategy = new crypto::MultiLayerStrategy();
+    // strategy->addLayer(dataProvider->getCryptoStrategy());
+
+    // TODO: They supposedly have different usage of algorithms depending on
+    //  the type of PS3 it is.
+    // crypto::CryptoStrategy* secondLayer;
+    // if (this->type == Ps3Type::PHAT)
+    //   secondLayer = new crypto::AesXtsStrategy(encDecKeys.data(), 
+    //     encDecKeys.data() + 0x20);
+    // else
+    //   secondLayer = new crypto::AesXtsStrategy(encDecKeys.data(), 
+    //     encDecKeys.data() + 0x20);
+
+    // TODO: Refactor crypto strategy's to always use MultiLayerStrategy.
+    //  Separate "swapping" code from crypto code, to a new CryptoStrategy.
+    //  Name it SwapShortsStrategy or something.
+    // strategy->addLayer(
+    //   new crypto::AesXtsStrategy(encDecKeys.data(), encDecKeys.data() + 0x20)
+    // );
+    // vflashView->getDataProvider()->setCryptoStrategy(strategy);
+
+    // Could just copy the CryptoStrategy from vflash
+    // auto partition = disk->addPartition(
+    //   swap64(vflashTable[0].p_start) * kSectorSize,
+    //   swap64(vflashTable[0].p_size) * kSectorSize
+    // );
+    // partition->setName("dev_flash");
+    // partition->getDataProvider()->setCryptoStrategy(
+    //   vflashView->getDataProvider()->getCryptoStrategy()
+    // );
+  }
+
+  // Add dev_hdd0
+  {
+    // No need to set crypto method as it inherits from the base
+    auto partition = disk->addPartition(
+      swap64(hdd0->p_start) * kSectorSize, 
+      swap64(hdd0->p_size) * kSectorSize
+    );
+    
+    partition->setName("dev_hdd0");
+    partition->getVfs()->setAdapter(
+      new vfs::adapters::Ufs2Adapter(partition->getDataProvider(), true)
+    );
+  }
+
+  // Add dev_hdd1
+  {
+    auto partition = disk->addPartition(
+      swap64(hdd1->p_start) * kSectorSize,
+      swap64(hdd1->p_size) * kSectorSize
+    );
+
+    partition->setName("dev_hdd1");
+    // partition->getVfs()->setAdapter(
+    //   new vfs::adapters::FatAdapter(partition->getDataProvider())
+    // );
+  }
 }
 
 } /* namespace formats */
