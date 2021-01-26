@@ -59,19 +59,20 @@ void MainWindow::populateExplorer(QFile* imageFile, QFile* keyFile)
     return;
   }
 
-  m_partition = m_disk->getPartitions()[0];
-  m_partition->mount();
-  
-  // Populate the tree view
-  auto vfs = m_partition->getVfs();
-  auto root = vfs->getRoot();
-
   m_treeViewModel = new QStandardItemModel;
-  QStandardItem* item = new QStandardItem(m_partition->getName().c_str());
-  item->setIcon(QApplication::style()->standardIcon(QStyle::SP_DriveHDIcon));
-  m_treeViewModel->appendRow(item);
 
-  populateTreeView(item, root);
+  for (auto partition : m_disk->getPartitions()) {
+    partition->mount();
+
+    auto vfs = partition->getVfs();
+    auto root = vfs->getRoot();
+
+    QStandardItem* item = new QStandardItem(partition->getName().c_str());
+    item->setIcon(QApplication::style()->standardIcon(QStyle::SP_DriveHDIcon));
+    m_treeViewModel->appendRow(item);
+
+    populateTreeView(item, root);
+  }
 
   m_treeView->setModel(m_treeViewModel);
 }
