@@ -4,6 +4,7 @@
 #include <io/data/data_provider.hpp>
 #include <vfs/adapters/adapter.hpp>
 #include "fat/fat_.h"
+#include "fat_boot_sector.hpp"
 
 namespace vfs {
 namespace adapters {
@@ -19,19 +20,8 @@ public:
 private:
   void loadDirectory(VfsDirectory* root);
 
-  bpb_ex* b;
+  FatBootSector* bootSector;
   bool needsSwap;
-  enum class FatType {
-    FAT12,
-    FAT16,
-    FAT32
-  } type;
-
-  uint32_t rootDirFirstCluster;
-  uint64_t fatByteOffset;
-  uint32_t bytesPerFat;
-  uint32_t numberOfFats;
-  uint64_t fileAreaByteOffset;
 };
 
 } /* namespace adapters */

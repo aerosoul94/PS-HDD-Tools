@@ -11,45 +11,12 @@ FatAdapter::FatAdapter(io::data::DataProvider* dataProvider, bool swap)
 
 VfsDirectory* FatAdapter::mount()
 {
-  b = new bpb_ex;
-  dataProvider->seek(0xb);
-  const auto size = sizeof(*b);
-  dataProvider->read(reinterpret_cast<char*>(b), size);
-
-  // Detect the FAT type
-  if (b->sectorsPerFat == 0) {
-    this->type = FatType::FAT32;
-  } else {
-    auto clusterCount = 0;
-    auto fileAreaLbo = b->reservedSectors + (b->fats * b->sectorsPerFat)
-      + ((b->rootEntries * sizeof(dirent)) / b->bytesPerSector);
-    if (b->sectors)
-      clusterCount = (b->sectors - fileAreaLbo) / b->sectorsPerCluster;
-    else
-      clusterCount = (b->largeSectors - fileAreaLbo) / b->sectorsPerCluster;
-    if (clusterCount < 4087)
-      this->type = FatType::FAT12;
-    else
-      this->type = FatType::FAT16;
-  }
-
-  // Get file system offsets
-  this->fatByteOffset = b->reservedSectors * b->bytesPerSector;
-  this->bytesPerFat = b->largeSectorsPerFat * b->bytesPerSector;
-  this->numberOfFats = b->fats;
-  this->fileAreaByteOffset = this->fatByteOffset + 
-    (this->bytesPerFat * this->numberOfFats);
-  this->rootDirFirstCluster = (this->type == FatType::FAT32) ?
-    b->rootDirFirstCluster : 2;
-
-  // We find the root cluster at cluster:
-  //   fat12: 2
-  //   fat16: 2
-  //   fat32: b->rootDirFirstCluster
+  bootSector = new FatBootSector(dataProvider);
 
   // When I start using cluster chains, loadDirectory() will handle seeking
   // by seeking to each cluster.
-  dataProvider->seek(this->fileAreaByteOffset);
+  auto fileAreaByteOffset = bootSector->getFileAreaByteOffset();
+  dataProvider->seek(fileAreaByteOffset);
   VfsDirectory* root = new VfsDirectory();
   loadDirectory(root);
 

@@ -173,6 +173,70 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
     // [3] = dev_flash3 FAT12
     // [4] = dev_flash4 
 
+    auto diskStrategy = dataProvider->getCryptoStrategy();
+    auto strategy = new crypto::MultiLayerStrategy();
+    strategy->addLayer(diskStrategy);
+
+    if (this->type == Ps3Type::PHAT) 
+      strategy->addLayer(new crypto::AesXtsStrategy(encDecKeys.data(),
+        encDecKeys.data() + 0x20));
+    else
+      strategy->addLayer(new crypto::AesXtsStrategy(encDecKeys.data(),
+        encDecKeys.data() + 0x20));
+
+    dataProvider->setCryptoStrategy(strategy);
+
+    // Read in the VFLASH partition table
+    std::vector<char> tmp(0x1000);
+    dataProvider->seek(swap64(vflash->p_start) * kSectorSize);
+    dataProvider->read(tmp.data(), 0x1000);
+
+    d_partition* vflashTable = reinterpret_cast<d_partition*>(tmp.data() 
+      + sizeof(disklabel));
+
+    auto base = swap64(vflash->p_start);
+
+    // Add dev_flash1
+    {
+      auto partition = disk->addPartition(
+        (base + swap64(vflashTable[1].p_start)) * kSectorSize,
+        swap64(vflashTable[1].p_size) * kSectorSize
+      );
+
+      partition->setName("dev_flash1");
+      partition->getVfs()->setAdapter(
+        new vfs::adapters::FatAdapter(partition->getDataProvider())
+      );
+    }
+
+    // Add dev_flash2
+    {
+      auto partition = disk->addPartition(
+        (base + swap64(vflashTable[2].p_start)) * kSectorSize,
+        swap64(vflashTable[2].p_size) * kSectorSize
+      );
+
+      partition->setName("dev_flash2");
+      partition->getVfs()->setAdapter(
+        new vfs::adapters::FatAdapter(partition->getDataProvider())
+      );
+    }
+
+    // Add dev_flash3
+    {
+      auto partition = disk->addPartition(
+        (base + swap64(vflashTable[3].p_start)) * kSectorSize,
+        swap64(vflashTable[3].p_size) * kSectorSize
+      );
+
+      partition->setName("dev_flash3");
+      partition->getVfs()->setAdapter(
+        new vfs::adapters::FatAdapter(partition->getDataProvider())
+      );
+    }
+
+    dataProvider->setCryptoStrategy(diskStrategy);
+
     // auto vflashView = disk->addPartition(
     //   swap64(vflash->p_start) * kSectorSize,
     //   swap64(vflash->p_size) * kSectorSize
