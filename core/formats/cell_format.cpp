@@ -9,6 +9,7 @@
 #include <crypto/multi_layer_strategy.hpp>
 #include <utilities/endian.hpp>
 #include <disk/partition.hpp>
+#include <vfs/adapters/fat_adapter.hpp>
 #include <vfs/adapters/ufs2_adapter.hpp>
 
 #include <iostream>
@@ -233,9 +234,9 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
     );
 
     partition->setName("dev_hdd1");
-    // partition->getVfs()->setAdapter(
-    //   new vfs::adapters::FatAdapter(partition->getDataProvider())
-    // );
+    partition->getVfs()->setAdapter(
+      new vfs::adapters::FatAdapter(partition->getDataProvider())
+    );
   }
 }
 

@@ -54,7 +54,7 @@ uint64_t DataProvider::readInternal(uint64_t offset, char* data, uint32_t length
 
   memcpy(data, buffer.data() + (offset - alignedOffset), length);
 
-  return readLen;
+  return (readLen > length) ? length : readLen;
 }
 
 uint64_t DataProvider::seek(int64_t offset, uint32_t whence)
