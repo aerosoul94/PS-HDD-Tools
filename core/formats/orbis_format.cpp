@@ -7,6 +7,7 @@
 #include <io/data/data_provider.hpp>
 #include <disk/disk.hpp>
 #include <disk/partition.hpp>
+#include <vfs/adapters/fat_adapter.hpp>
 #include <vfs/adapters/ufs2_adapter.hpp>
 
 namespace formats {
@@ -49,22 +50,76 @@ void OrbisDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
 
   auto keys = config->getKeys();
 
-  auto ent = getGptEntByType(&user_ent);
-  auto partition = disk->addPartition(
-    ent->lba_start * kSectorSize, 
-    (ent->lba_end - ent->lba_start) * kSectorSize
-  );
+  auto userStrategy = new 
+    crypto::AesXtsStrategy(keys.data(), keys.data() + 0x10);
 
-  auto partitionDataProvider = partition->getDataProvider();
-  partitionDataProvider->setSectorBias(ent->lba_start);
-  partitionDataProvider->setCryptoStrategy(
-    new crypto::AesXtsStrategy(keys.data(), keys.data() + 0x10)
-  );
+  {
+    auto ent = getGptEntByType(&user_ent);
+    auto partition = disk->addPartition(
+      ent->lba_start * kSectorSize, 
+      (ent->lba_end - ent->lba_start) * kSectorSize
+    );
 
-  partition->setName("user");
-  partition->getVfs()->setAdapter(
-    new vfs::adapters::Ufs2Adapter(partition->getDataProvider())
-  );
+    auto partitionDataProvider = partition->getDataProvider();
+    partitionDataProvider->setSectorBias(ent->lba_start);
+    partitionDataProvider->setCryptoStrategy(userStrategy);
+
+    partition->setName("user");
+    partition->getVfs()->setAdapter(
+      new vfs::adapters::Ufs2Adapter(partition->getDataProvider())
+    );
+  }
+
+  {
+    auto ent = getGptEntByType(&eap_user_ent);
+    auto partition = disk->addPartition(
+      ent->lba_start * kSectorSize,
+      (ent->lba_end - ent->lba_start) * kSectorSize
+    );
+
+    auto partitionDataProvider = partition->getDataProvider();
+    partitionDataProvider->setSectorBias(ent->lba_start);
+    partitionDataProvider->setCryptoStrategy(userStrategy);
+
+    partition->setName("eap_user");
+    partition->getVfs()->setAdapter(
+      new vfs::adapters::Ufs2Adapter(partition->getDataProvider())
+    );
+  }
+
+  {
+    auto ent = getGptEntByType(&eap_vsh_ent);
+    auto partition = disk->addPartition(
+      ent->lba_start * kSectorSize,
+      (ent->lba_end - ent->lba_start) * kSectorSize
+    );
+
+    auto partitionDataProvider = partition->getDataProvider();
+    partitionDataProvider->setSectorBias(ent->lba_start);
+    partitionDataProvider->setCryptoStrategy(userStrategy);
+
+    partition->setName("eap_vsh");
+    partition->getVfs()->setAdapter(
+      new vfs::adapters::FatAdapter(partition->getDataProvider())
+    );
+  }
+
+  {
+    auto ent = getGptEntByType(&update_ent);
+    auto partition = disk->addPartition(
+      ent->lba_start * kSectorSize,
+      (ent->lba_end - ent->lba_start) * kSectorSize
+    );
+
+    auto partitionDataProvider = partition->getDataProvider();
+    partitionDataProvider->setSectorBias(ent->lba_start);
+    partitionDataProvider->setCryptoStrategy(userStrategy);
+
+    partition->setName("update");
+    partition->getVfs()->setAdapter(
+      new vfs::adapters::FatAdapter(partition->getDataProvider())
+    );
+  }
 
   // Some partitions use different keys
   // for (auto ent : partitionTable) {

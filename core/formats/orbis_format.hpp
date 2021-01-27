@@ -44,6 +44,9 @@ private:
   gpt_hdr hdr;
   std::vector<gpt_ent> partitions;
   const uuid user_ent = GPT_ENT_TYPE_ORBIS_USER;
+  const uuid eap_user_ent = GPT_ENT_TYPE_ORBIS_EAP_USER;
+  const uuid eap_vsh_ent = GPT_ENT_TYPE_ORBIS_EAP_VSH;
+  const uuid update_ent = GPT_ENT_TYPE_ORBIS_UPDATE;
   const uint32_t kSectorSize = 0x200;
 };
 
