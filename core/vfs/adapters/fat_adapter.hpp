@@ -5,6 +5,7 @@
 #include <vfs/adapters/adapter.hpp>
 #include "fat/fat_.h"
 #include "fat_boot_sector.hpp"
+#include "fat_file_allocation_table.hpp"
 
 namespace vfs {
 namespace adapters {
@@ -18,9 +19,15 @@ public:
   void unmount() override;
 
 private:
-  void loadDirectory(VfsDirectory* root);
+  VfsDirectory* readRootDirectory();
+  void loadDirectory(std::vector<char>& buffer, VfsDirectory* root);
+  uint64_t clusterToFileAreaByteOffset(uint32_t clusterIndex);
 
   FatBootSector* bootSector;
+  FatFileAllocationTable* fat;
+  uint64_t fileAreaByteOffset;
+  uint32_t bytesPerCluster;
+  uint32_t maxDirents;
   bool needsSwap;
 };
 

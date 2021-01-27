@@ -6,6 +6,12 @@
 namespace vfs {
 namespace adapters {
 
+enum class FatType {
+  FAT12,
+  FAT16,
+  FAT32
+};
+
 class FatBootSector
 {
 public:
@@ -18,12 +24,10 @@ public:
   uint64_t getBytesPerFat();
   uint64_t getFileAreaByteOffset();
   uint32_t getRootDirFirstCluster();
-
-  enum class FatType {
-    FAT12,
-    FAT16,
-    FAT32
-  };
+  uint32_t getRootDirEntryCount();
+  uint32_t getSectorsPerCluster();
+  uint32_t getBytesPerCluster();
+  FatType getFatType();
 
 private:
   void readBootSector(uint64_t offset);

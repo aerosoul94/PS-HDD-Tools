@@ -83,15 +83,38 @@ uint64_t FatBootSector::getBytesPerFat()
 
 uint64_t FatBootSector::getFileAreaByteOffset()
 {
-  auto fatByteOffset = getFatByteOffset();
-  auto bytesPerFat = getBytesPerFat();
-  auto numFats = getNumFats();
-  return fatByteOffset + (bytesPerFat * numFats);
+  if (type == FatType::FAT32) {
+    return getFatByteOffset() + (getBytesPerFat() * getNumFats());
+  }
+  else {
+    return getFatByteOffset() + (getBytesPerFat() * getNumFats()) + 
+      rootEntryCount * sizeof(dirent);
+  }
 }
 
 uint32_t FatBootSector::getRootDirFirstCluster()
 {
   return (type == FatType::FAT32) ? rootDirFirstCluster : 2;
+}
+
+uint32_t FatBootSector::getRootDirEntryCount()
+{
+  return this->rootEntryCount;
+}
+
+uint32_t FatBootSector::getSectorsPerCluster()
+{
+  return this->sectorsPerCluster;
+}
+
+uint32_t FatBootSector::getBytesPerCluster()
+{
+  return this->sectorsPerCluster * this->bytesPerSector;
+}
+
+FatType FatBootSector::getFatType()
+{
+  return this->type;
 }
 
 uint8_t FatBootSector::readUInt8()
@@ -115,5 +138,5 @@ uint32_t FatBootSector::readUInt32()
   return value;
 }
 
-}
-}
+} /* namespace adapters */
+} /* namespace vfs */

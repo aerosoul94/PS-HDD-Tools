@@ -136,6 +136,11 @@ struct dirent_lfn {
                                           FAT_DIRENT_ATTR_SYSTEM |    \
                                           FAT_DIRENT_ATTR_VOLUME_ID)
 
+#define FAT_CLUSTER_AVAILABLE            0x00000000
+#define FAT_CLUSTER_RESERVED             0x0ffffff0
+#define FAT_CLUSTER_BAD                  0x0ffffff7
+#define FAT_CLUSTER_LAST                 0x0fffffff
+
 #define FAT_LAST_LONG_ENTRY              0x40
 
 #define IsBpbFat32(bpb) (*(uint16_t*)(&(bpb)->sectorsPerFat) == 0)

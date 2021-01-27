@@ -1,5 +1,9 @@
 #include "fat_adapter.hpp"
 
+#include <logging/logger.hpp>
+
+#include <vector>
+
 namespace vfs {
 namespace adapters {
 
@@ -12,102 +16,151 @@ FatAdapter::FatAdapter(io::data::DataProvider* dataProvider, bool swap)
 VfsDirectory* FatAdapter::mount()
 {
   bootSector = new FatBootSector(dataProvider);
+  fat = new FatFileAllocationTable(dataProvider, bootSector);
 
   // When I start using cluster chains, loadDirectory() will handle seeking
   // by seeking to each cluster.
-  auto fileAreaByteOffset = bootSector->getFileAreaByteOffset();
-  dataProvider->seek(fileAreaByteOffset);
-  VfsDirectory* root = new VfsDirectory();
-  loadDirectory(root);
+  fileAreaByteOffset = bootSector->getFileAreaByteOffset();
+  bytesPerCluster = bootSector->getBytesPerCluster();
+  maxDirents = bytesPerCluster / sizeof(dirent);
 
-  return root;
+  // VfsDirectory* root = new VfsDirectory();
+  // loadDirectory(root, bootSector->getRootDirFirstCluster());
+
+  return readRootDirectory();
 }
 
 void FatAdapter::unmount()
 {
-
 }
 
-void FatAdapter::loadDirectory(VfsDirectory* root)
+VfsDirectory* FatAdapter::readRootDirectory()
 {
-  // FatLocateDirent:
-  // https://github.com/microsoft/Windows-driver-samples/blob/master/filesys/fastfat/dirsup.c#L1247
+  VfsDirectory* root = new VfsDirectory();
 
+  if (bootSector->getFatType() == FatType::FAT32) {
+    std::vector<uint32_t> chain;
+    fat->getClusterChain(bootSector->getRootDirFirstCluster(), chain);
+
+    // For FAT32, we read the root directory like a regular file
+    std::vector<char> buffer(bytesPerCluster);
+    for (auto cluster : chain) {
+      auto clusterOffset = clusterToFileAreaByteOffset(cluster);
+      dataProvider->seek(clusterOffset);
+      dataProvider->read(buffer.data(), bytesPerCluster);
+
+      loadDirectory(buffer, root);
+    }
+  } 
+  else {
+    auto rootDirOffset = bootSector->getFatByteOffset() + 
+      (bootSector->getBytesPerFat() * bootSector->getNumFats()); 
+    auto rootDirSize = bootSector->getRootDirEntryCount() * sizeof(dirent);
+
+    std::vector<char> buffer(rootDirSize);
+    dataProvider->seek(rootDirOffset);
+    dataProvider->read(buffer.data(), rootDirSize);
+
+    loadDirectory(buffer, root);
+  }
+
+  return root;
+}
+
+void FatAdapter::loadDirectory(std::vector<char>& buffer, VfsDirectory* root)
+{
   std::u16string longFileName;
   auto lfnIndex = 0;
   auto useLfn = false;
-  dirent dir;
-  while (true) {
-    dataProvider->read(reinterpret_cast<char*>(&dir), sizeof(dirent));
+  auto curr = buffer.data();
+  auto end = buffer.data() + buffer.size();
 
-    if (dir.fileName[0] == FAT_DIRENT_NEVER_USED) {
+  while (curr < end) {
+    auto* dir = reinterpret_cast<dirent*>(curr);
+
+    // Check if we are at the end of the list
+    if (dir->fileName[0] == FAT_DIRENT_NEVER_USED)
       break;
-    }
 
-    if (dir.fileName[0] == FAT_DIRENT_DELETED) {
+    // Skip deleted entries
+    if (dir->fileName[0] == FAT_DIRENT_DELETED) {
+      curr += sizeof(dirent);
       continue;
     }
 
     // Check if it's a long file name entry
-    if (dir.attributes == FAT_DIRENT_ATTR_LFN) {
+    if (dir->attributes == FAT_DIRENT_ATTR_LFN) {
       useLfn = true;
 
-      dirent_lfn* lfn = reinterpret_cast<dirent_lfn*>(&dir);
+      auto lfn = reinterpret_cast<dirent_lfn*>(dir);
 
-      // copy the name to the beginning
       longFileName.insert(0, reinterpret_cast<char16_t*>(&lfn->name1), 5);
       longFileName.insert(5, reinterpret_cast<char16_t*>(&lfn->name2), 6);
       longFileName.insert(11, reinterpret_cast<char16_t*>(&lfn->name3), 2);
-
-      // Do some sanity checks
-      bool isLast = dir.fileName[0] & FAT_LAST_LONG_ENTRY;
-      // if (isLast) {
-      //   useLfn = false;
-      // }
     }
     else {
       VfsNode* node;
 
-      if (dir.attributes & FAT_DIRENT_ATTR_DIRECTORY) {
-        VfsDirectory* dir = new VfsDirectory;
-        
-        // loadDirectory(dir);
-
-        node = dir;
-      }
-      else {
-        VfsFile* file = new VfsFile;
-        file->setFileSize(dir.fileSize);
-
-        node = file;
-      }
-
+      std::string name;
       if (useLfn) {
-        // TODO: Switch to unicode names
-        std::string convert;
-        convert.resize((longFileName.length() + 2) / 2);
-
-        for (auto i = 0; i < convert.length(); i++) {
-          if (longFileName[i] == 0xffff)
+        // Convert unicode name to ascii
+        for (auto i = 0; i < longFileName.length(); i++) {
+          auto u = longFileName[i];
+          if (u == 0xffff || u == 0x0000)
             break;
 
-          convert[i] = longFileName[i];
+          name.push_back(u);
         }
 
-        node->setName(convert);
+        rDebug(name);
 
         longFileName.clear();
       }
       else {
-        // TODO: Short file names
-        node->setName("TODO SFN");
+        name.resize(0xB);
+        name.assign(dir->fileName, dir->fileName + 0xb);
       }
 
-      root->addChild(node);
+      if (name.compare(".          ") && name.compare("..         ")) {
+        if (dir->attributes & FAT_DIRENT_ATTR_DIRECTORY) {
+          node = new VfsDirectory();
+
+          std::vector<uint32_t> chain;
+          fat->getClusterChain(dir->firstClusterOfFile, chain);
+
+          // TODO: Copy and paste from readRootDirectory(), refactor this.
+          std::vector<char> ents(bytesPerCluster);
+          for (auto cluster : chain) {
+            auto clusterOffset = clusterToFileAreaByteOffset(cluster);
+            dataProvider->seek(clusterOffset);
+            dataProvider->read(ents.data(), bytesPerCluster);
+
+            loadDirectory(ents, static_cast<VfsDirectory*>(node));
+          }
+        }
+        else {
+          VfsFile* file = new VfsFile();
+
+          file->setFileSize(dir->fileSize);
+
+          node = file;
+        }
+
+        node->setName(name);
+
+        root->addChild(node);
+      }
 
       useLfn = false;
     }
+
+    curr += sizeof(dirent);
   }
+}
+
+uint64_t FatAdapter::clusterToFileAreaByteOffset(uint32_t clusterIndex)
+{
+  return fileAreaByteOffset + ((clusterIndex - 2) * bytesPerCluster);
 }
 
 } /* namespace adapters */
