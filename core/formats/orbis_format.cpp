@@ -120,16 +120,6 @@ void OrbisDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
       new vfs::adapters::FatAdapter(partition->getDataProvider())
     );
   }
-
-  // Some partitions use different keys
-  // for (auto ent : partitionTable) {
-  //   auto partition = new Partition(disk);
-  //   auto partitionDataProvider = partition->getDataProvider();
-  //   partitionDataProvider->setCryptoStrategy(
-  //     new AesXtsStrategy(keys.data(), keys.data() + 0x10)
-  //   );
-  //   partitions.push_back(partition);
-  // }
 }
 
 void OrbisDiskFormat::loadGptEntTable(io::data::DataProvider* dataProvider)

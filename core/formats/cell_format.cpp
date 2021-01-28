@@ -236,49 +236,10 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
     }
 
     dataProvider->setCryptoStrategy(diskStrategy);
-
-    // auto vflashView = disk->addPartition(
-    //   swap64(vflash->p_start) * kSectorSize,
-    //   swap64(vflash->p_size) * kSectorSize
-    // );
-
-    // vflashView->setName("dev_flash");
-
-    // auto strategy = new crypto::MultiLayerStrategy();
-    // strategy->addLayer(dataProvider->getCryptoStrategy());
-
-    // TODO: They supposedly have different usage of algorithms depending on
-    //  the type of PS3 it is.
-    // crypto::CryptoStrategy* secondLayer;
-    // if (this->type == Ps3Type::PHAT)
-    //   secondLayer = new crypto::AesXtsStrategy(encDecKeys.data(), 
-    //     encDecKeys.data() + 0x20);
-    // else
-    //   secondLayer = new crypto::AesXtsStrategy(encDecKeys.data(), 
-    //     encDecKeys.data() + 0x20);
-
-    // TODO: Refactor crypto strategy's to always use MultiLayerStrategy.
-    //  Separate "swapping" code from crypto code, to a new CryptoStrategy.
-    //  Name it SwapShortsStrategy or something.
-    // strategy->addLayer(
-    //   new crypto::AesXtsStrategy(encDecKeys.data(), encDecKeys.data() + 0x20)
-    // );
-    // vflashView->getDataProvider()->setCryptoStrategy(strategy);
-
-    // Could just copy the CryptoStrategy from vflash
-    // auto partition = disk->addPartition(
-    //   swap64(vflashTable[0].p_start) * kSectorSize,
-    //   swap64(vflashTable[0].p_size) * kSectorSize
-    // );
-    // partition->setName("dev_flash");
-    // partition->getDataProvider()->setCryptoStrategy(
-    //   vflashView->getDataProvider()->getCryptoStrategy()
-    // );
   }
 
   // Add dev_hdd0
   {
-    // No need to set crypto method as it inherits from the base
     auto partition = disk->addPartition(
       swap64(hdd0->p_start) * kSectorSize, 
       swap64(hdd0->p_size) * kSectorSize

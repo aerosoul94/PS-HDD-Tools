@@ -18,14 +18,9 @@ VfsDirectory* FatAdapter::mount()
   bootSector = new FatBootSector(dataProvider);
   fat = new FatFileAllocationTable(dataProvider, bootSector);
 
-  // When I start using cluster chains, loadDirectory() will handle seeking
-  // by seeking to each cluster.
   fileAreaByteOffset = bootSector->getFileAreaByteOffset();
   bytesPerCluster = bootSector->getBytesPerCluster();
   maxDirents = bytesPerCluster / sizeof(dirent);
-
-  // VfsDirectory* root = new VfsDirectory();
-  // loadDirectory(root, bootSector->getRootDirFirstCluster());
 
   return readRootDirectory();
 }
