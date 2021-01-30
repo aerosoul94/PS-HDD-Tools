@@ -32,8 +32,9 @@ This tool demonstrates usage of the virtual file system and simply prints out th
 mount-tool <input image> <key file>
 ```
 
+## File Explorer
+A GUI for exploring the drive's file systems.
+
 # Todo
-- Decrypt second layer of encryption for vflash (PS3)
 - Add support for arcade hdd's
-- Mount and display file systems
 - Data recovery tools
