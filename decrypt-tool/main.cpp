@@ -1,10 +1,13 @@
-#include <formats/disk_format_factory.hpp>
-#include <disk/disk_config.hpp>
 #include <disk/disk.hpp>
+#include <disk/disk_config.hpp>
 #include <disk/partition.hpp>
+#include <formats/disk_format_factory.hpp>
 #include <io/stream/file_disk_stream.hpp>
+#include <logging/logger.hpp>
+#include <logging/stdout_log_handler.hpp>
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <vector>
 
@@ -24,6 +27,23 @@ void writePartitionToFile(disk::Partition* partition, std::ofstream& file)
   }
 }
 
+void listPartitions(disk::Disk* disk)
+{
+  std::cout << std::setw(26) << std::left << "Partition Name"
+            << std::setw(16) << std::left << "Start"
+            << std::setw(16) << std::left << "End"
+            << std::setw(16) << std::left << "Length"
+            << std::endl;
+
+  for (auto partition : disk->getPartitions()) {
+    std::cout << std::setw(26) << std::left << partition->getName()
+              << std::setw(16) << std::left << std::hex << partition->getStart()
+              << std::setw(16) << std::left << std::hex << partition->getEnd()
+              << std::setw(16) << std::left << std::hex << partition->getLength()
+              << std::endl;
+  }
+}
+
 void buildConfig(disk::DiskConfig* config, std::ifstream& imageFile, std::ifstream& keyFile)
 {
   keyFile.seekg(0, std::ios::end);
@@ -37,28 +57,41 @@ void buildConfig(disk::DiskConfig* config, std::ifstream& imageFile, std::ifstre
   config->setStream(new io::stream::FileDiskStream(imageFile));
 }
 
+void printUsage(int argc, char** argv)
+{
+  std::cout << "Usage: " << argv[0] << " [command] [arguments]" << std::endl
+            << std::endl
+            << "Commands:" << std::endl
+            << "  list    <input> <key file>                       List available partitions." << std::endl
+            << "  decrypt <input> <key file> <partition> <output>  Decrypt a partition to a new file." << std::endl
+            << std::endl;
+}
+
 int main(int argc, char** argv)
 {
-  if (argc != 4) {
-    std::cout << "Usage: " 
-              << argv[0] 
-              << " <input image> <key file> <output file>"
-              << std::endl;
-    return 0;
+  if (argc < 4) {
+    printUsage(argc, argv);
+    return 1;
   }
 
-  std::ifstream imageFile;
-  imageFile.open(argv[1], std::ios::binary);
-  if (!imageFile.is_open()) {
-    std::cout << "Failed to open image file: " << argv[1] << std::endl;
-    return 0;
-  }
+  auto handler = new logging::StdOutLogHandler();
+  handler->setLogLevel(logging::LogLevel::Debug);
+  rAddHandler("stdout", handler);
+
+  std::string command(argv[1]);
   
+  std::ifstream imageFile;
+  imageFile.open(argv[2], std::ios::binary);
+  if (!imageFile.is_open()) {
+    rError(std::string("Failed to open image file: ") + std::string(argv[2]));
+    return 1;
+  }
+
   std::ifstream keyFile;
-  keyFile.open(argv[2], std::ios::binary);
+  keyFile.open(argv[3], std::ios::binary);
   if (!keyFile.is_open()) {
-    std::cout << "Failed to open key file: " << argv[2] << std::endl;
-    return 0;
+    rError(std::string("Failed to open key file: ") + std::string(argv[3]));
+    return 1;
   }
 
   disk::DiskConfig config;
@@ -66,18 +99,26 @@ int main(int argc, char** argv)
 
   disk::Disk* disk = formats::DiskFormatFactory::getInstance()->detectFormat(&config);
   if (!disk) {
-    std::cout << "Could not detect disk format" << std::endl;
-    return 0;
+    rError( "Could not detect disk format");
+    return 1;
   }
 
   if (!disk->getPartitions().size()) {
-    std::cout << "Could not find any partitions in this disk" << std::endl;
-    return 0;
+    rError("Could not find any partitions in this disk");
+    return 1;
   }
 
-  std::ofstream outputFile;
-  outputFile.open(argv[3], std::ios::binary);
-  writePartitionToFile(disk->getPartitions()[0], outputFile);
+  if (command == "list") {
+    listPartitions(disk);
+  }
+  else if (command == "decrypt") {
+    std::string partitionName(argv[4]);
+
+    std::ofstream outputFile;
+    outputFile.open(argv[5], std::ios::binary);
+
+    writePartitionToFile(disk->getPartitionByName(partitionName), outputFile);
+  }
 
   return 0;
 }
