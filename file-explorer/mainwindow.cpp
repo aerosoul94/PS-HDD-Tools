@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
 {
   m_treeView = new QTreeView;
+  m_treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
   //m_treeView->setModel(m_treeViewModel);
 
