@@ -15,9 +15,11 @@ Ufs2Adapter::Ufs2Adapter(io::data::DataProvider* dataProvider, bool swap)
 
 VfsDirectory* Ufs2Adapter::mount()
 {
+  // TODO: Move this to a Ufs2SuperBlock class
   super = new fs;
   dataProvider->seek(SBLOCK_UFS2);
   dataProvider->read(reinterpret_cast<char*>(super), sizeof(*super));
+
   // Swap endian if needed
   if (needsSwap)
     swapSuperblock(super);
@@ -48,12 +50,13 @@ void Ufs2Adapter::getInode(uint32_t ino, ufs2_dinode* inode)
     swapInode(inode);
 }
 
-void Ufs2Adapter::loadDirectory(VfsDirectory* root, ufs2_dinode* inode)
+void Ufs2Adapter::loadDirectory(VfsDirectory* root, ufs2_dinode* dinode)
 {
-  std::vector<uint32_t> blockList = getBlockListForInode(inode);
+  // TODO: Move this to a Ufs2Indexer class.
+  std::vector<uint32_t> blockList = getBlockListForInode(dinode);
   auto data = readBlocks(blockList);
   auto pDir = data.data();
-  while (pDir <= data.data() + inode->di_size) {
+  while (pDir < data.data() + dinode->di_size) {
     direct* dir = reinterpret_cast<direct*>(pDir);
     if (needsSwap) {
       swapDirect(dir);
@@ -84,9 +87,14 @@ void Ufs2Adapter::loadDirectory(VfsDirectory* root, ufs2_dinode* inode)
 
     node->setName(dir->d_name);
     // node->setAttributes(inode.di_mode);
-    // node->setLastAccessTime(inode.di_atime);
-    // node->setLastModifiedTime(inode.d_mtime);
-    // node->setCreationTime(inode.di_birthnsec);
+
+    node->getCreationTime()
+      ->setFromTime(reinterpret_cast<time_t*>(&inode.di_ctime));
+    node->getLastAccessTime()
+      ->setFromTime(reinterpret_cast<time_t*>(&inode.di_atime));
+    node->getLastModifiedTime()
+      ->setFromTime(reinterpret_cast<time_t*>(&inode.di_mtime));
+
     node->setParent(root);
 
     root->addChild(node);
@@ -135,10 +143,10 @@ void Ufs2Adapter::swapInode(ufs2_dinode* inode)
   _swap32(inode->di_blksize);
   _swap64(inode->di_size);
   _swap64(inode->di_blocks);
-  _swap32(inode->di_atime);
-  _swap32(inode->di_mtime);
-  _swap32(inode->di_ctime);
-  _swap32(inode->di_birthtime);
+  _swap64(inode->di_atime);
+  _swap64(inode->di_mtime);
+  _swap64(inode->di_ctime);
+  _swap64(inode->di_birthtime);
   _swap32(inode->di_mtimensec);
   _swap32(inode->di_atimensec);
   _swap32(inode->di_birthnsec);

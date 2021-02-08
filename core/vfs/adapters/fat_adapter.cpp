@@ -64,6 +64,7 @@ VfsDirectory* FatAdapter::readRootDirectory()
 
 void FatAdapter::loadDirectory(std::vector<char>& buffer, VfsDirectory* root)
 {
+  // TODO: Move all this to a FatIndexer class.
   std::u16string longFileName;
   auto lfnIndex = 0;
   auto useLfn = false;
@@ -142,6 +143,29 @@ void FatAdapter::loadDirectory(std::vector<char>& buffer, VfsDirectory* root)
         }
 
         node->setName(name);
+        node->setCreationTime(
+          dir->creationTime.date.day,
+          dir->creationTime.date.month,
+          dir->creationTime.date.year + 1980,
+          dir->creationTime.time.doubleSeconds * 2,
+          dir->creationTime.time.minute,
+          dir->creationTime.time.hour
+        );
+
+        node->setLastModifiedTime(
+          dir->lastWriteTime.date.day,
+          dir->lastWriteTime.date.month,
+          dir->lastWriteTime.date.year + 1980,
+          dir->lastWriteTime.time.doubleSeconds * 2,
+          dir->lastWriteTime.time.minute,
+          dir->lastWriteTime.time.hour
+        );
+
+        node->setLastAccessTime(
+          dir->lastAccessDate.day,
+          dir->lastAccessDate.month,
+          dir->lastAccessDate.year + 1980
+        );
 
         root->addChild(node);
       }

@@ -1,8 +1,11 @@
 #ifndef NODE_HPP
 #define NODE_HPP
 
+#include "date_time.hpp"
+
 #include <string>
 #include <vector>
+#include <ctime>
 
 namespace vfs {
 
@@ -40,6 +43,12 @@ public:
    */
   std::vector<uint64_t> getBlockIndexes() const;
 
+  VfsDateTime* getLastAccessTime();
+
+  VfsDateTime* getLastModifiedTime();
+
+  VfsDateTime* getCreationTime();
+
   /**
    * @brief Set this node's name.
    * 
@@ -52,17 +61,20 @@ public:
   /**
    * @brief Set the last access time for this node.
    */
-  void setLastAccessTime();
+  void setLastAccessTime(int day = 0, int month = 0, int year = 0, 
+                         int second = 0, int minute = 0, int hour = 0);
 
   /**
    * @brief Set the last modified time for this node.
    */
-  void setLastModifiedTime();
+  void setLastModifiedTime(int day = 0, int month = 0, int year = 0,
+                           int second = 0, int minute = 0, int hour = 0);
 
   /**
    * @brief Set the creation time for this node.
    */
-  void setCreationTime();
+  void setCreationTime(int day = 0, int month = 0, int year = 0,
+                       int second = 0, int minute = 0, int hour = 0);
 
   /**
    * @brief Set this node's parent node.
@@ -76,6 +88,11 @@ protected:
   std::string name;
   std::vector<uint64_t> blockIndexes;
   VfsNode* parent;
+  // TODO: Eventually these will be more dynamic. We can move these to 
+  //   some sort of std::map<string, VfsDateTime>.
+  VfsDateTime creationTime, 
+              lastModifiedTime, 
+              lastAccessTime;
 };
 
 } /* namespace vfs */

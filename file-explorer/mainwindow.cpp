@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QFileIconProvider>
 #include <QApplication>
+#include <QHeaderView>
 
 #include <formats/disk_format_factory.hpp>
 
@@ -60,6 +61,8 @@ void MainWindow::populateExplorer(QFile* imageFile, QFile* keyFile)
   }
 
   m_treeViewModel = new QStandardItemModel;
+  m_treeViewModel->setHorizontalHeaderLabels(QStringList() << "File Name" 
+    << "File Size" << "Date Created" << "Date Modified" << "Date Accessed");
 
   for (auto partition : m_disk->getPartitions()) {
     partition->mount();
@@ -85,8 +88,49 @@ void MainWindow::populateTreeView(QStandardItem* parent, vfs::VfsDirectory* root
       QApplication::style()->standardIcon(QStyle::SP_DirIcon) :
       QApplication::style()->standardIcon(QStyle::SP_FileIcon);
       
+    QList<QStandardItem*> row;
     auto item = new QStandardItem(icon, node->getName().c_str());
-    parent->appendRow(item);
+    row.append(item);
+
+    auto fileSizeCell = new QStandardItem("");
+    if (node->getType() == vfs::VfsNodeType::FILE) {
+      fileSizeCell->setText(
+        QString::number((ulong)static_cast<vfs::VfsFile*>(node)->getFileSize())
+      );
+    }
+
+    row.append(fileSizeCell);
+    row.append(new QStandardItem(
+      QString("%1/%2/%3 %4:%5:%6")
+        .arg(node->getCreationTime()->getMonth())
+        .arg(node->getCreationTime()->getDay())
+        .arg(node->getCreationTime()->getYear())
+        .arg(node->getCreationTime()->getHour(), 2, 10, QLatin1Char('0'))
+        .arg(node->getCreationTime()->getMinute(), 2, 10, QLatin1Char('0'))
+        .arg(node->getCreationTime()->getSecond(), 2, 10, QLatin1Char('0'))
+    ));
+
+    row.append(new QStandardItem(
+      QString("%1/%2/%3 %4:%5:%6")
+        .arg(node->getLastModifiedTime()->getMonth())
+        .arg(node->getLastModifiedTime()->getDay())
+        .arg(node->getLastModifiedTime()->getYear())
+        .arg(node->getLastModifiedTime()->getHour(), 2, 10, QLatin1Char('0'))
+        .arg(node->getLastModifiedTime()->getMinute(), 2, 10, QLatin1Char('0'))
+        .arg(node->getLastModifiedTime()->getSecond(), 2, 10, QLatin1Char('0'))
+    ));
+
+    row.append(new QStandardItem(
+      QString("%1/%2/%3 %4:%5:%6")
+        .arg(node->getLastAccessTime()->getMonth())
+        .arg(node->getLastAccessTime()->getDay())
+        .arg(node->getLastAccessTime()->getYear())
+        .arg(node->getLastAccessTime()->getHour(), 2, 10, QLatin1Char('0'))
+        .arg(node->getLastAccessTime()->getMinute(), 2, 10, QLatin1Char('0'))
+        .arg(node->getLastAccessTime()->getSecond(), 2, 10, QLatin1Char('0'))
+    ));
+
+    parent->appendRow(row);
 
     if (node->getType() == vfs::VfsNodeType::DIRECTORY) {
       populateTreeView(item, static_cast<vfs::VfsDirectory*>(node));

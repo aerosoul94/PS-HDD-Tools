@@ -21,7 +21,7 @@ public:
 
 private:
   void getInode(uint32_t ino, ufs2_dinode* inode);
-  void loadDirectory(VfsDirectory* root, ufs2_dinode* inode);
+  void loadDirectory(VfsDirectory* root, ufs2_dinode* dinode);
   std::vector<uint32_t> getBlockListForInode(ufs2_dinode* inode);
   std::vector<char> readBlocks(std::vector<uint32_t> blockList);
   void swapInode(ufs2_dinode* inode);
