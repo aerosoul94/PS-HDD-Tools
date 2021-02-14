@@ -10,6 +10,7 @@
 #include <vfs/node.hpp>
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <vector>
 
@@ -26,6 +27,23 @@ void printDirectory(vfs::VfsDirectory* dir, int level)
   }
 }
 
+void listPartitions(disk::Disk* disk)
+{
+  std::cout << std::setw(26) << std::left << "Partition Name"
+            << std::setw(16) << std::left << "Start"
+            << std::setw(16) << std::left << "End"
+            << std::setw(16) << std::left << "Length"
+            << std::endl;
+
+  for (auto partition : disk->getPartitions()) {
+    std::cout << std::setw(26) << std::left << partition->getName()
+              << std::setw(16) << std::left << std::hex << partition->getStart()
+              << std::setw(16) << std::left << std::hex << partition->getEnd()
+              << std::setw(16) << std::left << std::hex << partition->getLength()
+              << std::endl;
+  }
+}
+
 void buildConfig(disk::DiskConfig* config, std::ifstream& imageFile, std::ifstream& keyFile)
 {
   keyFile.seekg(0, std::ios::end);
@@ -39,14 +57,21 @@ void buildConfig(disk::DiskConfig* config, std::ifstream& imageFile, std::ifstre
   config->setStream(new io::stream::FileDiskStream(imageFile));
 }
 
+void printUsage(int argc, char** argv)
+{
+  std::cout << "Usage: " << argv[0] << "[command] [arguments...]" << std::endl
+            << std::endl
+            << "Commands:" << std::endl
+            << "  list    <input> <key file>              List available partitions." << std::endl
+            << "  display <input> <key file> <partition>  Display file system contents." << std::endl
+            << std::endl;
+}
+
 int main(int argc, char** argv)
 {
-  if (argc != 3) {
-    std::cout << "Usage: "
-              << argv[0]
-              << " <input image> <key file>"
-              << std::endl;
-    return 0;
+  if (argc < 4) {
+    printUsage(argc, argv);
+    return 1;
   }
 
   auto logger = new logging::StdOutLogHandler;
@@ -55,18 +80,20 @@ int main(int argc, char** argv)
 #endif
   rAddHandler("stdout", logger);
 
+  std::string command(argv[1]);
+
   std::ifstream imageFile;
-  imageFile.open(argv[1], std::ios::binary);
+  imageFile.open(argv[2], std::ios::binary);
   if (!imageFile.is_open()) {
-    std::cout << "Failed to open image file: " << argv[1] << std::endl;
-    return 0;
+    rError("Failed to open image file: " + std::string(argv[2]));
+    return 1;
   }
 
   std::ifstream keyFile;
-  keyFile.open(argv[2], std::ios::binary);
+  keyFile.open(argv[3], std::ios::binary);
   if (!keyFile.is_open()) {
-    std::cout << "Failed to open key file: " << argv[2] << std::endl;
-    return 0;
+    rError("Failed to open key file: " + std::string(argv[3]));
+    return 1;
   }
 
   disk::DiskConfig config;
@@ -74,26 +101,38 @@ int main(int argc, char** argv)
 
   disk::Disk* disk = formats::DiskFormatFactory::getInstance()->detectFormat(&config);
   if (!disk) {
-    std::cout << "Could not detect disk format" << std::endl;
-    return 0;
+    rError("Could not detect disk format");
+    return 1;
   }
 
   if (!disk->getPartitions().size()) {
-    std::cout << "Could not find any partitions in this disk" << std::endl;
-    return 0;
+    rError("Could not find any partitions in this disk");
+    return 1;
   }
 
-  auto partition = disk->getPartitions().front();
-  partition->mount();
-  auto vfs = partition->getVfs();
+  if (command == "list") {
+    listPartitions(disk);
+  }
+  else if (command == "display") {
+    std::string partitionName(argv[4]);
 
-  if (!vfs->isMounted()) {
-    rError("Could not mount the file system.");
-    return 0;
+    auto partition = disk->getPartitionByName(partitionName);
+    if (partition == nullptr) {
+      rError("No partition named: " + partitionName);
+      return 1;
+    }
+
+    partition->mount();
+    auto vfs = partition->getVfs();
+
+    if (!vfs->isMounted()) {
+      rError("Could not mount the file system.");
+      return 1;
+    }
+
+    auto root = vfs->getRoot();
+    printDirectory(root, 0);
   }
 
-  auto root = vfs->getRoot();
-  printDirectory(root, 0);
-
-  rInfo("Done!");
+  return 0;
 }
