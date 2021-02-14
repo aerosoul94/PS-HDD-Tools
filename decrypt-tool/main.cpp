@@ -113,11 +113,16 @@ int main(int argc, char** argv)
   }
   else if (command == "decrypt") {
     std::string partitionName(argv[4]);
+    auto partition = disk->getPartitionByName(partitionName);
+    if (partition == nullptr) {
+      rError("No partition named: " + partitionName);
+      return 1;
+    }
 
     std::ofstream outputFile;
     outputFile.open(argv[5], std::ios::binary);
 
-    writePartitionToFile(disk->getPartitionByName(partitionName), outputFile);
+    writePartitionToFile(partition, outputFile);
   }
 
   return 0;

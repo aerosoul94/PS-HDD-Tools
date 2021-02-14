@@ -33,6 +33,7 @@ Partition* Disk::getPartitionByName(std::string& name) const
     if (partition->getName() == name)
       return partition;
   }
+  return nullptr;
 }
 
 Partition* Disk::addPartition(uint64_t start, uint64_t length)
