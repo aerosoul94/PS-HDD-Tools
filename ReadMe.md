@@ -33,7 +33,11 @@ You can go to any offset by pressing `CTRL + G` and entering either a decimal va
 This tool demonstrates usage of the virtual file system and simply prints out the contents of each file system. Eventually more functionality will be added.
 ### Usage
 ```
-mount-tool <input image> <key file>
+Usage: mount-tool [command] [arguments...]
+
+Commands:
+  list    <input> <key file>              List available partitions.
+  display <input> <key file> <partition>  Display file system contents.
 ```
 
 ## File Explorer
