@@ -27,8 +27,8 @@ jobs:
         windeployqt --release --verbose 2 bin/Release/file-explorer.exe
         windeployqt --release --verbose 2 bin/Release/hex-viewer.exe
 
-    # - name: Upload Artifact
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: Release-${{ runner.os }}
-    #     path: /bin/Release
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Release-${{ runner.os }}
+        path: bin/Release
