@@ -1,0 +1,34 @@
+name: main
+
+on: [push]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        modules: 'core gui widgets'
+
+    - name: Create Build Environment
+      run: cmake -S . -B build
+
+    - name: Build
+      shell: bash
+      run: |
+        cmake --build ./build --config $BUILD_TYPE
+        windeployqt --release --verbose 2 bin/Release/file-explorer.exe
+        windeployqt --release --verbose 2 bin/Release/hex-viewer.exe
+
+    # - name: Upload Artifact
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: Release-${{ runner.os }}
+    #     path: /bin/Release
