@@ -59,7 +59,7 @@ void buildConfig(disk::DiskConfig* config, std::ifstream& imageFile, std::ifstre
 
 void printUsage(int argc, char** argv)
 {
-  std::cout << "Usage: " << argv[0] << " [command] [arguments]" << std::endl
+  std::cout << "Usage: " << argv[0] << " [command] [arguments...]" << std::endl
             << std::endl
             << "Commands:" << std::endl
             << "  list    <input> <key file>                       List available partitions." << std::endl
@@ -75,7 +75,9 @@ int main(int argc, char** argv)
   }
 
   auto handler = new logging::StdOutLogHandler();
+#ifndef NDEBUG
   handler->setLogLevel(logging::LogLevel::Debug);
+#endif
   rAddHandler("stdout", handler);
 
   std::string command(argv[1]);

@@ -69,7 +69,6 @@ void Ufs2Adapter::loadDirectory(VfsDirectory* root, ufs2_dinode* dinode)
     if (!dir->d_ino)
       break;
 
-    rDebug(dir->d_name);
     ufs2_dinode inode;
     getInode(dir->d_ino, &inode);
 
