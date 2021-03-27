@@ -60,4 +60,18 @@ void VfsNode::setParent(VfsNode* parent)
   this->parent = parent;
 }
 
+void VfsNode::addOffset(std::string key, uint64_t value)
+{
+  offsets.insert({{key, value}});
+}
+
+std::vector<uint64_t> VfsNode::getOffsets(std::string& key)
+{
+  std::vector<uint64_t> result;
+  auto range = offsets.equal_range(key);
+  for (auto it = range.first; it != range.second; it++)
+    result.push_back(it->second);
+  return result;
+}
+
 } /* namespace vfs */

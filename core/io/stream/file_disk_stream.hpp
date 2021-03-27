@@ -12,7 +12,8 @@ namespace stream {
 class FileDiskStream : public DiskStream
 {
 public:
-  FileDiskStream(std::ifstream&);
+  FileDiskStream(std::string&);
+  FileDiskStream(std::ifstream*);
 
   uint64_t read(char* data, uint32_t length) override;
   uint64_t seek(int64_t offset, uint32_t whence = 0) override;
@@ -20,7 +21,7 @@ public:
   uint64_t getLength() const override;
 
 private:
-  std::ifstream& stream;
+  std::ifstream* stream;
   uint64_t length;
 };
 

@@ -3,6 +3,7 @@
 
 #include "date_time.hpp"
 
+#include <unordered_map>
 #include <string>
 #include <vector>
 #include <ctime>
@@ -19,6 +20,7 @@ class VfsNode
 {
 public:
   VfsNode(VfsNodeType type);
+  virtual ~VfsNode() = default;
 
   /**
    * @brief Get the type of node this is. See VfsNodeType.
@@ -35,13 +37,6 @@ public:
    * @return std::string 
    */
   std::string getName() const;
-  
-  /**
-   * @brief Get a list of block indexes that form this node's data.
-   * 
-   * @return std::vector<uint64_t> 
-   */
-  std::vector<uint64_t> getBlockIndexes() const;
 
   VfsDateTime* getLastAccessTime();
 
@@ -57,6 +52,13 @@ public:
    * @param name 
    */
   void setName(std::string name);
+
+  /**
+   * @brief Set this node's parent node.
+   * 
+   * @param parent The parent node.
+   */
+  void setParent(VfsNode* parent);
 
   /**
    * @brief Set the last access time for this node.
@@ -77,11 +79,20 @@ public:
                        int second = 0, int minute = 0, int hour = 0);
 
   /**
-   * @brief Set this node's parent node.
+   * @brief Add an offset associated with this file.
    * 
-   * @param parent The parent node.
+   * @param key The name or group this offset belongs to.
+   * @param value The offset.
    */
-  void setParent(VfsNode* parent);
+  void addOffset(std::string key, uint64_t value);
+
+  /**
+   * @brief Get offsets by group name.
+   * 
+   * @param key Group name.
+   * @return std::vector<uint64_t> Offsets associated with this file.
+   */
+  std::vector<uint64_t> getOffsets(std::string& key);
 
 protected:
   VfsNodeType type;
@@ -93,6 +104,7 @@ protected:
   VfsDateTime creationTime, 
               lastModifiedTime, 
               lastAccessTime;
+  std::unordered_multimap<std::string, uint64_t> offsets;
 };
 
 } /* namespace vfs */

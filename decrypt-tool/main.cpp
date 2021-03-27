@@ -44,7 +44,7 @@ void listPartitions(disk::Disk* disk)
   }
 }
 
-void buildConfig(disk::DiskConfig* config, std::ifstream& imageFile, std::ifstream& keyFile)
+void buildConfig(disk::DiskConfig* config, std::ifstream* imageFile, std::ifstream& keyFile)
 {
   keyFile.seekg(0, std::ios::end);
   auto keyLen = keyFile.tellg();
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
   }
 
   disk::DiskConfig config;
-  buildConfig(&config, imageFile, keyFile);
+  buildConfig(&config, &imageFile, keyFile);
 
   disk::Disk* disk = formats::DiskFormatFactory::getInstance()->detectFormat(&config);
   if (!disk) {

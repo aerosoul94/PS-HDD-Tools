@@ -28,6 +28,8 @@ private:
   void swapDirect(direct* di);
   void swapSuperblock(fs* superblock);
   bool checkSuperblock(fs* superblock);
+  void loadDataOffsets(VfsNode* node, ufs2_dinode* inode);
+  void loadIndirectBlockTable(VfsNode* node, ufs2_daddr_t addr);
 
   fs* super;
   bool needsSwap;
