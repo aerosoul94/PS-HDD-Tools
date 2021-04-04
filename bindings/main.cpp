@@ -7,6 +7,8 @@
 #include <disk/disk_config.hpp>
 #include <disk/partition.hpp>
 #include <formats/disk_format_factory.hpp>
+#include <io/data/data_provider.hpp>
+#include <io/data/bounded_data_provider.hpp>
 #include <io/stream/file_disk_stream.hpp>
 #include <vfs/file_system.hpp>
 
@@ -17,6 +19,22 @@ PYBIND11_MODULE(disklib, m) {
 
   py::class_<io::stream::FileDiskStream, io::stream::DiskStream>(m, "FileDiskStream")
     .def(pybind11::init<std::string&>());
+
+  py::class_<io::data::DataProvider>(m, "DataProvider")
+    .def("getLength", &io::data::DataProvider::getLength)
+    .def("tell", &io::data::DataProvider::tell)
+    .def("seek", [](io::data::DataProvider& provider, int64_t offset, uint32_t whence)
+    {
+      return provider.seek(offset, whence);
+    }, py::arg("offset"), py::arg("whence") = 0)
+    .def("read", [](io::data::DataProvider& provider, uint32_t length)
+    { 
+      auto data = new std::vector<char>(length);
+      provider.read(data->data(), length);
+      return py::bytes(data->data(), data->size());
+    });
+
+  py::class_<io::data::BoundedDataProvider, io::data::DataProvider>(m, "BoundedDataProvider");
     
   py::class_<disk::DiskConfig>(m, "DiskConfig")
     .def(pybind11::init<>())
@@ -29,7 +47,7 @@ PYBIND11_MODULE(disklib, m) {
     .def("getDataProvider", &disk::Disk::getDataProvider)
     .def("getPartitions", &disk::Disk::getPartitions)
     .def("getPartitionByName", &disk::Disk::getPartitionByName)
-    .def("addPartition", &disk::Disk::addPartition)
+    // .def("addPartition", &disk::Disk::addPartition)
     .def("getSectorSize", &disk::Disk::getSectorSize);
 
   py::class_<disk::Partition>(m, "Partition")
@@ -49,7 +67,7 @@ PYBIND11_MODULE(disklib, m) {
   py::class_<vfs::Vfs>(m, "Vfs")
     .def("mount", &vfs::Vfs::mount)
     .def("getRoot", &vfs::Vfs::getRoot)
-    .def("setAdapter", &vfs::Vfs::setAdapter)
+    //.def("setAdapter", &vfs::Vfs::setAdapter)
     .def("isMounted", &vfs::Vfs::isMounted);
 
   py::enum_<vfs::VfsNodeType>(m, "VfsNodeType")
@@ -61,25 +79,25 @@ PYBIND11_MODULE(disklib, m) {
     .def(pybind11::init<vfs::VfsNodeType>())
     .def("getType", &vfs::VfsNode::getType)
     .def("getName", &vfs::VfsNode::getName)
-    .def("setName", &vfs::VfsNode::setName)
-    .def("setParent", &vfs::VfsNode::setParent)
+    // .def("setName", &vfs::VfsNode::setName)
+    // .def("setParent", &vfs::VfsNode::setParent)
     .def("getLastAccessTime", &vfs::VfsNode::getLastAccessTime)
     .def("getlastModifiedTime", &vfs::VfsNode::getLastModifiedTime)
     .def("getCreationTime", &vfs::VfsNode::getCreationTime)
-    .def("setLastAccessTime", &vfs::VfsNode::setLastAccessTime)
-    .def("setlastModifiedTime", &vfs::VfsNode::setLastModifiedTime)
-    .def("setCreationTime", &vfs::VfsNode::setCreationTime)
+    // .def("setLastAccessTime", &vfs::VfsNode::setLastAccessTime)
+    // .def("setlastModifiedTime", &vfs::VfsNode::setLastModifiedTime)
+    // .def("setCreationTime", &vfs::VfsNode::setCreationTime)
     .def("getOffsets", &vfs::VfsNode::getOffsets)
     .def("__str__", [](const vfs::VfsNode& node) {
       return node.getName();
     });
 
   py::class_<vfs::VfsDirectory, vfs::VfsNode>(m, "VfsDirectory")
-    .def("addChild", &vfs::VfsDirectory::addChild)
+    // .def("addChild", &vfs::VfsDirectory::addChild)
     .def("getChildren", &vfs::VfsDirectory::getChildren)
     .def("getChildCount", &vfs::VfsDirectory::getChildCount);
 
   py::class_<vfs::VfsFile, vfs::VfsNode>(m, "VfsFile")
-    .def("setFileSize", &vfs::VfsFile::setFileSize)
+    // .def("setFileSize", &vfs::VfsFile::setFileSize)
     .def("getFileSize", &vfs::VfsFile::getFileSize);
 }

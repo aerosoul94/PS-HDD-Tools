@@ -17,6 +17,7 @@ def main(imagePath, keyPath):
   vfs = partition.getVfs()
   vfs.mount()
   root = vfs.getRoot()
+  # Print root directory
   for node in root.getChildren():
     print(node.getName())
 
