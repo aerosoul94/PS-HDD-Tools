@@ -65,7 +65,7 @@ uint64_t BoundedDataProvider::tell()
   return this->position;
 }
 
-uint64_t BoundedDataProvider::getLength()
+uint64_t BoundedDataProvider::getLength() const
 {
   return this->length;
 }

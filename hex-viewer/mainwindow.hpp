@@ -17,19 +17,12 @@ public:
   MainWindow(QWidget* parent = Q_NULLPTR);
 
 private:
-  QHexView* m_hexView;
+  QTabWidget* m_tabWidget;
   QFile* m_imageFile;
-
   disk::Disk* m_disk;
-  disk::Partition* m_partition;
-  bool m_searchDialogOpen;
-  SearchDialog* m_searchDialog;
 
 private slots:
   void slotOpenFile();
-  void slotGotoOffset();
-  void slotCopyData();
-  void slotFindData();
 };
 
 #endif /* MAINWINDOW_HPP */

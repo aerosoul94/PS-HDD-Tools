@@ -94,5 +94,7 @@ void SearchDialog::onSearchCompleted(quint64 offset, quint32 size)
   m_hexCursor->moveTo(offset);
   m_hexCursor->select(size);
   m_progressDialog->close();
-  parentWidget()->activateWindow();
+  auto parent = parentWidget();
+  if (parent)
+    parent->activateWindow();
 }

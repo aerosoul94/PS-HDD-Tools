@@ -12,7 +12,7 @@ SearchThread::SearchThread(QByteArray needle, io::data::DataProvider* hayStack,
 
 void SearchThread::run()
 {
-  const quint32 kBufSize = 0x4000000;
+  const quint32 kBufSize = 0x400000;
   quint64 pos = static_cast<quint64>(m_from) + 1;
   QByteArray buffer(kBufSize, 0);
 

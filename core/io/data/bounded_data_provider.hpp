@@ -20,7 +20,7 @@ public:
   uint64_t read(char* data, uint32_t length);
   uint64_t seek(int64_t offset, uint32_t whence = 0);
   uint64_t tell();
-  uint64_t getLength();
+  uint64_t getLength() const;
 
 private:
   uint64_t position;

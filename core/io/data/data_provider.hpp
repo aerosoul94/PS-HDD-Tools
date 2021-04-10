@@ -80,7 +80,7 @@ public:
    * 
    * @return uint64_t 
    */
-  uint64_t getLength() const;
+  virtual uint64_t getLength() const;
   
 protected:
   virtual uint64_t readInternal(uint64_t offset, char* data, uint32_t length);

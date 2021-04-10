@@ -48,6 +48,8 @@ set(SOURCES
   main.cpp
   mainwindow.cpp
   mainwindow.hpp
+  hexview.cpp
+  hexview.hpp
   searchdialog.cpp
   searchdialog.hpp
   searchthread.cpp

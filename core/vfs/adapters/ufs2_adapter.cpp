@@ -32,6 +32,12 @@ VfsDirectory* Ufs2Adapter::mount()
   VfsDirectory* root = new VfsDirectory();
   ufs2_dinode inode;
   getInode(ROOTINO, &inode);
+
+  auto fsbo = ino_to_fsbo(super, ROOTINO);  // Returns the inode index within a inode block
+  auto offset = (fsbtodb(super, ino_to_fsba(super, ROOTINO)) * 0x200) + fsbo * sizeof(inode);
+
+  root->addOffset("inode", offset);
+
   loadDirectory(root, &inode);
 
   return root;
