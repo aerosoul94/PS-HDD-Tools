@@ -20,6 +20,8 @@ HexView::HexView(disk::Partition* partition, QWidget* parent)
   QHexDocument* hexEditData = QHexDocument::fromDevice<QDiskBuffer>(device);
   m_hexView->setDocument(hexEditData);
 
+  m_hexCursor = m_hexView->document()->cursor();
+
   QVBoxLayout* mainLayout = new QVBoxLayout;
   mainLayout->addWidget(m_hexView);
   setLayout(mainLayout);
@@ -42,6 +44,14 @@ HexView::HexView(disk::Partition* partition, QWidget* parent)
   findAction->setShortcut(Qt::CTRL | Qt::Key_F);
   connect(findAction, SIGNAL(triggered()), this, SLOT(slotFindData()));
   this->addAction(findAction);
+
+  // Selection changed update
+  connect(m_hexCursor, SIGNAL(positionChanged()), this, SLOT(positionChanged()));
+}
+
+void HexView::positionChanged()
+{
+  emit positionUpdate();
 }
 
 void HexView::slotGotoOffset()

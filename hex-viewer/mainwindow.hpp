@@ -2,6 +2,7 @@
 #define MAINWINDOW_HPP
 
 #include <QtWidgets/QMainWindow>
+#include <QLabel>
 
 #include <qhexview.h>
 
@@ -20,8 +21,12 @@ private:
   QTabWidget* m_tabWidget;
   QFile* m_imageFile;
   disk::Disk* m_disk;
+  QLabel* m_offsetLabel;
+  QLabel* m_selectedRangeLabel;
+  QLabel* m_selectedLengthLabel;
 
 private slots:
+  void updateStatusBar();
   void slotOpenFile();
 };
 
