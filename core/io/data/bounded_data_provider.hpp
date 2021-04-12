@@ -17,10 +17,10 @@ public:
   BoundedDataProvider(DataProvider* base, 
     uint64_t start, uint64_t length, uint32_t sectorSize);
 
-  uint64_t read(char* data, uint32_t length);
-  uint64_t seek(int64_t offset, uint32_t whence = 0);
-  uint64_t tell();
-  uint64_t getLength() const;
+  uint64_t read(char* data, uint32_t length) override;
+  uint64_t seek(int64_t offset, uint32_t whence = 0) override;
+  uint64_t tell() override;
+  uint64_t getLength() const override;
 
 private:
   uint64_t position;

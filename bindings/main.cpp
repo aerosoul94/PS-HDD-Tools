@@ -29,9 +29,9 @@ PYBIND11_MODULE(disklib, m) {
     }, py::arg("offset"), py::arg("whence") = 0)
     .def("read", [](io::data::DataProvider& provider, uint32_t length)
     { 
-      auto data = new std::vector<char>(length);
-      provider.read(data->data(), length);
-      return py::bytes(data->data(), data->size());
+      std::vector<char> data(length);
+      provider.read(data.data(), length);
+      return py::bytes(data.data(), data.size());
     });
 
   py::class_<io::data::BoundedDataProvider, io::data::DataProvider>(m, "BoundedDataProvider");
@@ -39,14 +39,14 @@ PYBIND11_MODULE(disklib, m) {
   py::class_<disk::DiskConfig>(m, "DiskConfig")
     .def(pybind11::init<>())
     .def("setStream", &disk::DiskConfig::setStream)
-    .def("getStream", &disk::DiskConfig::getStream)
+    .def("getStream", &disk::DiskConfig::getStream, py::return_value_policy::reference)
     .def("setKeys", [](disk::DiskConfig& config, std::string& s) { config.setKeys(s.data(), s.length()); })
     .def("getKeys", &disk::DiskConfig::getKeys);
 
   py::class_<disk::Disk>(m, "Disk")
-    .def("getDataProvider", &disk::Disk::getDataProvider)
-    .def("getPartitions", &disk::Disk::getPartitions)
-    .def("getPartitionByName", &disk::Disk::getPartitionByName)
+    .def("getDataProvider", &disk::Disk::getDataProvider, py::return_value_policy::reference)
+    .def("getPartitions", &disk::Disk::getPartitions, py::return_value_policy::reference)
+    .def("getPartitionByName", &disk::Disk::getPartitionByName, py::return_value_policy::reference)
     // .def("addPartition", &disk::Disk::addPartition)
     .def("getSectorSize", &disk::Disk::getSectorSize);
 
@@ -54,8 +54,8 @@ PYBIND11_MODULE(disklib, m) {
     .def("mount", &disk::Partition::mount)
     .def("getName", &disk::Partition::getName)
     .def("setName", &disk::Partition::setName)
-    .def("getVfs", &disk::Partition::getVfs)
-    .def("getDataProvider", &disk::Partition::getDataProvider)
+    .def("getVfs", &disk::Partition::getVfs, py::return_value_policy::reference)
+    .def("getDataProvider", &disk::Partition::getDataProvider, py::return_value_policy::reference)
     .def("getLength", &disk::Partition::getLength)
     .def("getStart", &disk::Partition::getStart)
     .def("getEnd", &disk::Partition::getEnd);
@@ -66,7 +66,7 @@ PYBIND11_MODULE(disklib, m) {
 
   py::class_<vfs::Vfs>(m, "Vfs")
     .def("mount", &vfs::Vfs::mount)
-    .def("getRoot", &vfs::Vfs::getRoot)
+    .def("getRoot", &vfs::Vfs::getRoot, py::return_value_policy::reference)
     //.def("setAdapter", &vfs::Vfs::setAdapter)
     .def("isMounted", &vfs::Vfs::isMounted);
 
