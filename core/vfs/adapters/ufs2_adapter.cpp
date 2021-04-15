@@ -68,6 +68,7 @@ void Ufs2Adapter::loadDirectory(VfsDirectory* root, ufs2_dinode* dinode)
       swapDirect(dir);
     }
 
+    auto off = pDir - data.data();
     pDir += dir->d_reclen;
     //VfsNode* node = nullptr;
     if (!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, ".."))
@@ -89,6 +90,12 @@ void Ufs2Adapter::loadDirectory(VfsDirectory* root, ufs2_dinode* dinode)
 
       node = file;
     }
+
+    auto blockIndex = off/super->fs_fsize;
+    auto addr = ((uint64_t)blockList[blockIndex] * super->fs_fsize) + 
+      (off - (blockIndex * super->fs_fsize));
+
+    node->addOffset("dirent", addr);
 
     auto fsbo = ino_to_fsbo(super, dir->d_ino);  // Returns the inode index within a inode block
     auto offset = (fsbtodb(super, ino_to_fsba(super, dir->d_ino)) * 0x200) + fsbo * sizeof(inode);

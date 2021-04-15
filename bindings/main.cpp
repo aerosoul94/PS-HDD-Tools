@@ -94,7 +94,7 @@ PYBIND11_MODULE(disklib, m) {
 
   py::class_<vfs::VfsDirectory, vfs::VfsNode>(m, "VfsDirectory")
     // .def("addChild", &vfs::VfsDirectory::addChild)
-    .def("getChildren", &vfs::VfsDirectory::getChildren)
+    .def("getChildren", &vfs::VfsDirectory::getChildren, py::return_value_policy::reference)
     .def("getChildCount", &vfs::VfsDirectory::getChildCount);
 
   py::class_<vfs::VfsFile, vfs::VfsNode>(m, "VfsFile")
