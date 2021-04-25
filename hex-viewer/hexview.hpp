@@ -1,3 +1,6 @@
+#ifndef HEXVIEW_HPP
+#define HEXVIEW_HPP
+
 #include <QWidget>
 
 #include <qhexview.h>
@@ -27,7 +30,10 @@ signals:
   
 private slots:
   void positionChanged();
+  void slotSelectData();
   void slotGotoOffset();
   void slotCopyData();
   void slotFindData();
 };
+
+#endif /* HEXVIEW_HPP */

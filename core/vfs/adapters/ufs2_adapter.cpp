@@ -91,7 +91,7 @@ void Ufs2Adapter::loadDirectory(VfsDirectory* root, ufs2_dinode* dinode)
       node = file;
     }
 
-    auto blockIndex = off/super->fs_fsize;
+    auto blockIndex = off/super->fs_bsize;
     auto addr = ((uint64_t)blockList[blockIndex] * super->fs_fsize) + 
       (off - (blockIndex * super->fs_fsize));
 

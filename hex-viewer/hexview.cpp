@@ -1,4 +1,5 @@
 #include "hexview.hpp"
+#include "selectdialog.hpp"
 #include "QDiskDevice.hpp"
 #include "QDiskBuffer.hpp"
 
@@ -45,6 +46,11 @@ HexView::HexView(disk::Partition* partition, QWidget* parent)
   connect(findAction, SIGNAL(triggered()), this, SLOT(slotFindData()));
   this->addAction(findAction);
 
+  QAction* selectAction = new QAction(this);
+  selectAction->setShortcut(Qt::CTRL | Qt::Key_S);
+  connect(selectAction, SIGNAL(triggered()), this, SLOT(slotSelectData()));
+  this->addAction(selectAction);
+
   // Selection changed update
   connect(m_hexCursor, SIGNAL(positionChanged()), this, SLOT(positionChanged()));
 }
@@ -54,11 +60,17 @@ void HexView::positionChanged()
   emit positionUpdate();
 }
 
+void HexView::slotSelectData()
+{
+  auto dialog = new SelectDialog(m_hexCursor);
+  dialog->exec();
+}
+
 void HexView::slotGotoOffset()
 {
   bool ok;
   QString offsetText = QInputDialog::getText(this, tr("Go to offset"), tr("Enter Offset"),
-    QLineEdit::Normal, "", &ok);
+    QLineEdit::Normal, QString("0x%1").arg(m_hexCursor->position().offset(), 0, 16), &ok);
   if (ok && !offsetText.isEmpty()) {
     quint64 offset;
     if (offsetText.startsWith("0x"))

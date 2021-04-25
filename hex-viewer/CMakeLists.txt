@@ -50,6 +50,8 @@ set(SOURCES
   mainwindow.hpp
   hexview.cpp
   hexview.hpp
+  selectdialog.cpp
+  selectdialog.hpp
   searchdialog.cpp
   searchdialog.hpp
   searchthread.cpp
