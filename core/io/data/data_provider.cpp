@@ -40,7 +40,7 @@ uint64_t DataProvider::readInternal(uint64_t offset, char* data, uint32_t length
 
   this->stream->seek(alignedOffset);
 
-  auto alignedLength = (length + (this->sectorSize - 1))
+  auto alignedLength = ((offset - alignedOffset) + length + (this->sectorSize - 1))
     & ~(this->sectorSize - 1);
 
   std::vector<char> buffer(alignedLength);
