@@ -1,5 +1,7 @@
 #include "disk_config.hpp"
 
+#include <cstring>
+
 namespace disk {
 
 void DiskConfig::setKeys(const char* data, uint32_t length)

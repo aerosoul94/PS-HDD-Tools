@@ -3,6 +3,8 @@
 #include <crypto/crypto_strategy.hpp>
 #include <io/stream/disk_stream.hpp>
 
+#include <cstring>
+
 namespace io {
 namespace data {
 

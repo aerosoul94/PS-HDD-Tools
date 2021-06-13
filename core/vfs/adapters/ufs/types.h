@@ -11,8 +11,6 @@ typedef uint16_t        u_int16_t;
 typedef uint32_t        u_int32_t;
 typedef uint64_t        u_int64_t;
 
-typedef int64_t         daddr_t;
-
 #define ino_t           uint32_t
 
 #endif

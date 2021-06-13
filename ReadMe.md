@@ -22,6 +22,10 @@ Requires either the EID root key (PS3) or EAP hdd key (PS4).
 * naehrwert
 * 3141card
 
+# Contributors
+* Tdijital
+* jason098
+
 # Tools
 ### Decrypt Tool
 The decryption tool will take an hdd image and a key file as input and output a decrypted partition.

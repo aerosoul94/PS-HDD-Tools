@@ -3,6 +3,7 @@
 #include <logging/logger.hpp>
 
 #include <assert.h>
+#include <cstring>
 
 namespace vfs {
 namespace adapters {

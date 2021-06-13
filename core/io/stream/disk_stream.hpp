@@ -1,6 +1,7 @@
 #ifndef DISK_STREAM_HPP
 #define DISK_STREAM_HPP
 
+#include <stdint.h>
 #include <vector>
 
 namespace io {

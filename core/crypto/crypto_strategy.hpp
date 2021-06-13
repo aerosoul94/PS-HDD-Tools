@@ -1,6 +1,8 @@
 #ifndef CRYPTO_STRATEGY_HPP
 #define CRYPTO_STRATEGY_HPP
 
+#include <stdint.h>
+
 namespace crypto {
 
 /**

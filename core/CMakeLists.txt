@@ -14,3 +14,5 @@ file(GLOB SRC_FILES
 
 include_directories(${PROJECT_SOURCE_DIR}/core)
 add_library(core ${SRC_FILES})
+
+set_property(TARGET core PROPERTY POSITION_INDEPENDENT_CODE ON)

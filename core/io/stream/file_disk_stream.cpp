@@ -7,7 +7,7 @@ FileDiskStream::FileDiskStream(std::string& path)
 {
   stream = new std::ifstream(path, std::ios::binary);
   const auto pos = stream->tellg();
-  stream->seekg(0, 2);
+  stream->seekg(0, std::ios_base::end);
   this->length = stream->tellg();
   stream->seekg(pos);
 }
@@ -16,7 +16,7 @@ FileDiskStream::FileDiskStream(std::ifstream* file)
   : stream(file)
 {
   const auto pos = file->tellg();
-  file->seekg(0, 2);
+  file->seekg(0, std::ios_base::end);
   this->length = file->tellg();
   file->seekg(pos);
 }
@@ -28,7 +28,7 @@ uint64_t FileDiskStream::read(char* data, uint32_t length)
 
 uint64_t FileDiskStream::seek(int64_t offset, uint32_t whence)
 {
-  return stream->seekg(offset, whence).tellg();
+  return stream->seekg(offset, std::ios_base::seekdir(whence)).tellg();
 }
 
 uint64_t FileDiskStream::tell()
