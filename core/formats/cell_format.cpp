@@ -146,11 +146,21 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
       hdd0 = &table[1];
       hdd1 = &table[2];
       break;
-    case Ps3Type::PHAT:
+    case Ps3Type::PHAT: {
       // TODO: I'm not sure if this is entirely reliable.
       //   This is how we're detecting the VFLASH partition.
       //   Alternatively, we could probably look into the p_acl fields.
-      if (swap64(table[0].p_start) == 8) {
+      auto strategy =
+          crypto::AesXtsStrategy(encDecKeys.data(), encDecKeys.data() + 0x20);
+      std::vector<char> vflashTable(0x1000);
+      dataProvider->seek(0x1000);
+      // This will also decrypt the first layer.
+      dataProvider->read(vflashTable.data(), 0x1000);
+      strategy.decrypt(vflashTable.data(), 8, 0x1000);
+
+      auto header = reinterpret_cast<disklabel *>(vflashTable.data());
+      if (swap64(header->d_magic1) == MAGIC1 &&
+          swap64(header->d_magic2) == MAGIC2) {
         vflash = &table[0];
         hdd0 = &table[1];
         hdd1 = &table[2];
@@ -159,6 +169,7 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
         hdd1 = &table[1];
       }
       break;
+    }
     case Ps3Type::UNK: // Should not be possible.
     default:
       return;

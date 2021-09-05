@@ -1,4 +1,6 @@
+.vs/
 .vscode/
 build/
 bin/
 QHexView/
+CMakeSettings.json
