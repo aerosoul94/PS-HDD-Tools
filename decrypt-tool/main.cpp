@@ -2,7 +2,7 @@
 #include <disk/disk_config.hpp>
 #include <disk/partition.hpp>
 #include <formats/disk_format_factory.hpp>
-#include <io/stream/file_disk_stream.hpp>
+#include <io/stream/disk_stream_factory.hpp>
 #include <logging/logger.hpp>
 #include <logging/stdout_log_handler.hpp>
 
@@ -44,7 +44,7 @@ void listPartitions(disk::Disk* disk)
   }
 }
 
-void buildConfig(disk::DiskConfig* config, std::ifstream* imageFile, std::ifstream& keyFile)
+void buildConfig(disk::DiskConfig* config, std::string& imageFile, std::ifstream& keyFile)
 {
   keyFile.seekg(0, std::ios::end);
   auto keyLen = keyFile.tellg();
@@ -54,7 +54,9 @@ void buildConfig(disk::DiskConfig* config, std::ifstream* imageFile, std::ifstre
   keyFile.read(keyData.data(), keyLen);
 
   config->setKeys(keyData.data(), keyLen);
-  config->setStream(new io::stream::FileDiskStream(imageFile));
+
+  auto* stream = io::stream::DiskStreamFactory::getStream(imageFile);
+  config->setStream(stream);
 }
 
 void printUsage(int argc, char** argv)
@@ -81,13 +83,7 @@ int main(int argc, char** argv)
   rAddHandler("stdout", handler);
 
   std::string command(argv[1]);
-  
-  std::ifstream imageFile;
-  imageFile.open(argv[2], std::ios::binary);
-  if (!imageFile.is_open()) {
-    rError(std::string("Failed to open image file: ") + std::string(argv[2]));
-    return 1;
-  }
+  std::string input(argv[2]);
 
   std::ifstream keyFile;
   keyFile.open(argv[3], std::ios::binary);
@@ -97,7 +93,7 @@ int main(int argc, char** argv)
   }
 
   disk::DiskConfig config;
-  buildConfig(&config, &imageFile, keyFile);
+  buildConfig(&config, input, keyFile);
 
   disk::Disk* disk = formats::DiskFormatFactory::getInstance()->detectFormat(&config);
   if (!disk) {

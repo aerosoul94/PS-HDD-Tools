@@ -1,6 +1,6 @@
 name: main
 
-on: [push]
+on: [push, pull_request]
 
 env:
   BUILD_TYPE: Release
@@ -49,7 +49,7 @@ jobs:
         modules: 'core gui widgets'
 
     - name: Create Build Environment
-      run: cmake -S . -B build
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
     - name: Build
       shell: bash
@@ -62,7 +62,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Release-${{ runner.os }}
-        path: ./
+        path: bin/Release
 
   build-macos:
     runs-on: macos-latest
@@ -78,7 +78,7 @@ jobs:
         modules: 'core gui widgets'
 
     - name: Create Build Environment
-      run: cmake -S . -B build
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
     - name: Build
       shell: bash
@@ -91,4 +91,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Release-${{ runner.os }}
-        path: ./
+        path: bin/Release
