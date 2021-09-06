@@ -1,4 +1,6 @@
 # PS-HDD-Tools
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/aerosoul94/PS-HDD-Tools/main)
+
 :warning: These tools have not been thoroughly tested.
 
 This repository includes a collection of tools for inspecting encrypted PS3 or PS4 hard drives.

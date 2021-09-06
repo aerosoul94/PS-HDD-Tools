@@ -34,3 +34,61 @@ jobs:
       with:
         name: Release-${{ runner.os }}
         path: bin/Release
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        modules: 'core gui widgets'
+
+    - name: Create Build Environment
+      run: cmake -S . -B build
+
+    - name: Build
+      shell: bash
+      run: |
+        cmake --build ./build --config $BUILD_TYPE
+        pwd
+        ls
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Release-${{ runner.os }}
+        path: ./
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        modules: 'core gui widgets'
+
+    - name: Create Build Environment
+      run: cmake -S . -B build
+
+    - name: Build
+      shell: bash
+      run: |
+        cmake --build ./build --config $BUILD_TYPE
+        pwd
+        ls
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Release-${{ runner.os }}
+        path: ./
