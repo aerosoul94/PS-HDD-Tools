@@ -2,11 +2,14 @@
 #define UFS2_ADAPTER_HPP
 
 #include "adapter.hpp"
+#include "utilities/endian.hpp"
 
 #include "ufs/types.h"
 #include "ufs/ffs/fs.h"
 #include "ufs/ufs/dir.h"
 #include "ufs/ufs/dinode.h"
+
+#include <type_traits>
 
 namespace vfs {
 namespace adapters {
@@ -30,6 +33,21 @@ private:
   bool checkSuperblock(fs* superblock);
   void loadDataOffsets(VfsNode* node, ufs2_dinode* inode);
   void loadIndirectBlockTable(VfsNode* node, ufs2_daddr_t addr);
+  
+  template <typename T, typename std::enable_if<sizeof(T) == 8, bool>::type = true>
+  T swap(T v) {
+    return needsSwap ? swap64(v) : v;
+  }
+  
+  template <typename T, typename std::enable_if<sizeof(T) == 4, bool>::type = true>
+  T swap(T v) {
+    return needsSwap ? swap32(v) : v;
+  }
+  
+  template <typename T, typename std::enable_if<sizeof(T) == 2, bool>::type = true>
+  T swap(T v) {
+    return needsSwap ? swap16(v) : v;
+  }
 
   fs* super;
   bool needsSwap;
