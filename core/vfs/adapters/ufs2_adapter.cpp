@@ -1,5 +1,4 @@
 #include "ufs2_adapter.hpp"
-#include <utilities/endian.hpp>
 #include <logging/logger.hpp>
 
 #include <assert.h>
@@ -143,8 +142,8 @@ void Ufs2Adapter::loadDataOffsets(VfsNode* node, ufs2_dinode* inode)
     for (auto x = 0; x < super->fs_nindir; x++) {
       if (buffer[x] == 0)
         return;
-      node->addOffset("blocktable", swap64(buffer[x]) * super->fs_fsize);
-      loadIndirectBlockTable(node, swap64(buffer[x]));
+      node->addOffset("blocktable", swap(buffer[x]) * super->fs_fsize);
+      loadIndirectBlockTable(node, swap(buffer[x]));
     }
   }
 
@@ -156,15 +155,15 @@ void Ufs2Adapter::loadDataOffsets(VfsNode* node, ufs2_dinode* inode)
     for (auto x = 0; x < super->fs_nindir; x++) {
       if (buffer[x] == 0)
         return;
-      node->addOffset("blocktable", swap64(buffer[x]) * super->fs_fsize);
+      node->addOffset("blocktable", swap(buffer[x]) * super->fs_fsize);
       std::vector<uint64_t> bufferY(super->fs_bsize / sizeof(uint64_t));
       dataProvider->seek(buffer[x] * super->fs_fsize);
       dataProvider->read(reinterpret_cast<char*>(bufferY.data()), super->fs_bsize);
       for (auto y = 0; y < super->fs_nindir; y++) {
         if (bufferY[y] == 0)
           return;
-          node->addOffset("blocktable", swap64(bufferY[y]) * super->fs_fsize);
-          loadIndirectBlockTable(node, swap64(bufferY[y]));
+        node->addOffset("blocktable", swap(bufferY[y]) * super->fs_fsize);
+        loadIndirectBlockTable(node, swap(bufferY[y]));
       }
     }
   }
@@ -178,7 +177,7 @@ void Ufs2Adapter::loadIndirectBlockTable(VfsNode* node, ufs2_daddr_t addr)
   for (auto i = 0; i < super->fs_nindir; i++) {
     if (buffer[i] == 0)
       return;
-    auto offset = swap64(buffer[i]) * super->fs_fsize;
+    auto offset = swap(buffer[i]) * super->fs_fsize;
     node->addOffset("data", offset);
   }
 }
@@ -213,186 +212,182 @@ bool Ufs2Adapter::checkSuperblock(fs* superblock)
   return superblock->fs_magic == FS_UFS2_MAGIC;
 }
 
-#define _swap16(x) x = swap16(x)
-#define _swap32(x) x = swap32(x)
-#define _swap64(x) x = swap64(x)
-
 void Ufs2Adapter::swapInode(ufs2_dinode* inode)
 {
-  _swap16(inode->di_mode);
-  _swap16(inode->di_nlink);
-  _swap32(inode->di_uid);
-  _swap32(inode->di_gid);
-  _swap32(inode->di_blksize);
-  _swap64(inode->di_size);
-  _swap64(inode->di_blocks);
-  _swap64(inode->di_atime);
-  _swap64(inode->di_mtime);
-  _swap64(inode->di_ctime);
-  _swap64(inode->di_birthtime);
-  _swap32(inode->di_mtimensec);
-  _swap32(inode->di_atimensec);
-  _swap32(inode->di_birthnsec);
-  _swap32(inode->di_gen);
-  _swap32(inode->di_kernflags);
-  _swap32(inode->di_flags);
-  _swap32(inode->di_extsize);
+  swap(inode->di_mode);
+  swap(inode->di_nlink);
+  swap(inode->di_uid);
+  swap(inode->di_gid);
+  swap(inode->di_blksize);
+  swap(inode->di_size);
+  swap(inode->di_blocks);
+  swap(inode->di_atime);
+  swap(inode->di_mtime);
+  swap(inode->di_ctime);
+  swap(inode->di_birthtime);
+  swap(inode->di_mtimensec);
+  swap(inode->di_atimensec);
+  swap(inode->di_birthnsec);
+  swap(inode->di_gen);
+  swap(inode->di_kernflags);
+  swap(inode->di_flags);
+  swap(inode->di_extsize);
   for (auto i = 0; i < NXADDR; i++)
-    _swap64(inode->di_extb[i]);
+    swap(inode->di_extb[i]);
   for (auto i = 0; i < NDADDR; i++)
-    _swap64(inode->di_db[i]);
+    swap(inode->di_db[i]);
   for (auto i = 0; i < NIADDR; i++)
-    _swap64(inode->di_ib[i]);
-  _swap64(inode->di_modrev);
-  _swap32(inode->di_freelink);
+    swap(inode->di_ib[i]);
+  swap(inode->di_modrev);
+  swap(inode->di_freelink);
 }
 
 void Ufs2Adapter::swapDirect(direct* d)
 {
-  _swap32(d->d_ino);
-  _swap16(d->d_reclen);
+  swap(d->d_ino);
+  swap(d->d_reclen);
 }
 
 void Ufs2Adapter::swapSuperblock(fs* superblock)
 {
-  _swap32(superblock->fs_firstfield);
-  _swap32(superblock->fs_unused_1);
-  _swap32(superblock->fs_sblkno);
-  _swap32(superblock->fs_cblkno);
-  _swap32(superblock->fs_iblkno);
-  _swap32(superblock->fs_dblkno);
-  _swap32(superblock->fs_old_cgoffset);
-  _swap32(superblock->fs_old_cgmask);
-  _swap32(superblock->fs_old_time);
-  _swap32(superblock->fs_old_size);
-  _swap32(superblock->fs_old_dsize);
-  _swap32(superblock->fs_ncg);
-  _swap32(superblock->fs_bsize);
-  _swap32(superblock->fs_fsize);
-  _swap32(superblock->fs_frag);
-  _swap32(superblock->fs_minfree);
-  _swap32(superblock->fs_old_rotdelay);
-  _swap32(superblock->fs_old_rps);
-  _swap32(superblock->fs_bmask);
-  _swap32(superblock->fs_fmask);
-  _swap32(superblock->fs_bshift);
-  _swap32(superblock->fs_fshift);
-  _swap32(superblock->fs_maxcontig);
-  _swap32(superblock->fs_maxbpg);
-  _swap32(superblock->fs_fragshift);
-  _swap32(superblock->fs_fsbtodb);
-  _swap32(superblock->fs_sbsize);
-  _swap32(superblock->fs_spare1[0]);
-  _swap32(superblock->fs_spare1[1]);
-  _swap32(superblock->fs_nindir);
-  _swap32(superblock->fs_inopb);
-  _swap32(superblock->fs_old_nspf);
-  _swap32(superblock->fs_optim);
-  _swap32(superblock->fs_old_npsect);
-  _swap32(superblock->fs_old_interleave);
-  _swap32(superblock->fs_old_trackskew);
-  _swap32(superblock->fs_id[0]);
-  _swap32(superblock->fs_id[1]);
-  _swap32(superblock->fs_old_csaddr);
-  _swap32(superblock->fs_cssize);
-  _swap32(superblock->fs_cgsize);
-  _swap32(superblock->fs_spare2);
-  _swap32(superblock->fs_old_nsect);
-  _swap32(superblock->fs_old_spc);
-  _swap32(superblock->fs_old_ncyl);
-  _swap32(superblock->fs_old_cpg);
-  _swap32(superblock->fs_ipg);
-  _swap32(superblock->fs_fpg);
-  _swap64(superblock->fs_swuid);
-  //_swap32(superblock->fs_pad);
-  _swap32(superblock->fs_cgrotor);
-  _swap32(superblock->fs_old_cpc);
-  _swap32(superblock->fs_maxbsize);
-  _swap64(superblock->fs_unrefs);
-  _swap64(superblock->fs_providersize);
-  _swap64(superblock->fs_metaspace);
-  _swap64(superblock->fs_sparecon64[0]);
-  _swap64(superblock->fs_sparecon64[1]);
-  _swap64(superblock->fs_sparecon64[2]);
-  _swap64(superblock->fs_sparecon64[3]);
-  _swap64(superblock->fs_sparecon64[4]);
-  _swap64(superblock->fs_sparecon64[5]);
-  _swap64(superblock->fs_sparecon64[6]);
-  _swap64(superblock->fs_sparecon64[7]);
-  _swap64(superblock->fs_sparecon64[8]);
-  _swap64(superblock->fs_sparecon64[9]);
-  _swap64(superblock->fs_sparecon64[10]);
-  _swap64(superblock->fs_sparecon64[11]);
-  _swap64(superblock->fs_sparecon64[12]);
-  _swap64(superblock->fs_sparecon64[13]);
-  _swap64(superblock->fs_sblockloc);
-  _swap32(superblock->fs_time);
-  _swap64(superblock->fs_size);
-  _swap64(superblock->fs_dsize);
-  _swap32(superblock->fs_csaddr);
-  _swap64(superblock->fs_pendingblocks);
-  _swap32(superblock->fs_pendinginodes);
-  _swap32(superblock->fs_snapinum[0]);
-  _swap32(superblock->fs_snapinum[1]);
-  _swap32(superblock->fs_snapinum[2]);
-  _swap32(superblock->fs_snapinum[3]);
-  _swap32(superblock->fs_snapinum[4]);
-  _swap32(superblock->fs_snapinum[5]);
-  _swap32(superblock->fs_snapinum[6]);
-  _swap32(superblock->fs_snapinum[7]);
-  _swap32(superblock->fs_snapinum[8]);
-  _swap32(superblock->fs_snapinum[9]);
-  _swap32(superblock->fs_snapinum[10]);
-  _swap32(superblock->fs_snapinum[11]);
-  _swap32(superblock->fs_snapinum[12]);
-  _swap32(superblock->fs_snapinum[13]);
-  _swap32(superblock->fs_snapinum[14]);
-  _swap32(superblock->fs_snapinum[15]);
-  _swap32(superblock->fs_snapinum[16]);
-  _swap32(superblock->fs_snapinum[17]);
-  _swap32(superblock->fs_snapinum[18]);
-  _swap32(superblock->fs_snapinum[19]);
-  _swap32(superblock->fs_avgfilesize);
-  _swap32(superblock->fs_avgfpdir);
-  _swap32(superblock->fs_save_cgsize);
-  _swap32(superblock->fs_mtime);
-  _swap32(superblock->fs_sujfree);
-  _swap32(superblock->fs_sparecon32[0]);
-  _swap32(superblock->fs_sparecon32[1]);
-  _swap32(superblock->fs_sparecon32[2]);
-  _swap32(superblock->fs_sparecon32[3]);
-  _swap32(superblock->fs_sparecon32[4]);
-  _swap32(superblock->fs_sparecon32[5]);
-  _swap32(superblock->fs_sparecon32[6]);
-  _swap32(superblock->fs_sparecon32[7]);
-  _swap32(superblock->fs_sparecon32[8]);
-  _swap32(superblock->fs_sparecon32[9]);
-  _swap32(superblock->fs_sparecon32[10]);
-  _swap32(superblock->fs_sparecon32[11]);
-  _swap32(superblock->fs_sparecon32[12]);
-  _swap32(superblock->fs_sparecon32[13]);
-  _swap32(superblock->fs_sparecon32[14]);
-  _swap32(superblock->fs_sparecon32[15]);
-  _swap32(superblock->fs_sparecon32[16]);
-  _swap32(superblock->fs_sparecon32[17]);
-  _swap32(superblock->fs_sparecon32[18]);
-  _swap32(superblock->fs_sparecon32[19]);
-  _swap32(superblock->fs_sparecon32[20]);
-  _swap32(superblock->fs_sparecon32[21]);
-  _swap32(superblock->fs_sparecon32[22]);
-  _swap32(superblock->fs_flags);
-  _swap32(superblock->fs_contigsumsize);
-  _swap32(superblock->fs_maxsymlinklen);
-  _swap32(superblock->fs_old_inodefmt);
-  _swap64(superblock->fs_maxfilesize);
-  _swap64(superblock->fs_qbmask);
-  _swap64(superblock->fs_qfmask);
-  _swap32(superblock->fs_state);
-  _swap32(superblock->fs_old_postblformat);
-  _swap32(superblock->fs_old_nrpos);
-  _swap32(superblock->fs_spare5[0]);
-  _swap32(superblock->fs_spare5[1]);
-  _swap32(superblock->fs_magic);
+  swap(superblock->fs_firstfield);
+  swap(superblock->fs_unused_1);
+  swap(superblock->fs_sblkno);
+  swap(superblock->fs_cblkno);
+  swap(superblock->fs_iblkno);
+  swap(superblock->fs_dblkno);
+  swap(superblock->fs_old_cgoffset);
+  swap(superblock->fs_old_cgmask);
+  swap(superblock->fs_old_time);
+  swap(superblock->fs_old_size);
+  swap(superblock->fs_old_dsize);
+  swap(superblock->fs_ncg);
+  swap(superblock->fs_bsize);
+  swap(superblock->fs_fsize);
+  swap(superblock->fs_frag);
+  swap(superblock->fs_minfree);
+  swap(superblock->fs_old_rotdelay);
+  swap(superblock->fs_old_rps);
+  swap(superblock->fs_bmask);
+  swap(superblock->fs_fmask);
+  swap(superblock->fs_bshift);
+  swap(superblock->fs_fshift);
+  swap(superblock->fs_maxcontig);
+  swap(superblock->fs_maxbpg);
+  swap(superblock->fs_fragshift);
+  swap(superblock->fs_fsbtodb);
+  swap(superblock->fs_sbsize);
+  swap(superblock->fs_spare1[0]);
+  swap(superblock->fs_spare1[1]);
+  swap(superblock->fs_nindir);
+  swap(superblock->fs_inopb);
+  swap(superblock->fs_old_nspf);
+  swap(superblock->fs_optim);
+  swap(superblock->fs_old_npsect);
+  swap(superblock->fs_old_interleave);
+  swap(superblock->fs_old_trackskew);
+  swap(superblock->fs_id[0]);
+  swap(superblock->fs_id[1]);
+  swap(superblock->fs_old_csaddr);
+  swap(superblock->fs_cssize);
+  swap(superblock->fs_cgsize);
+  swap(superblock->fs_spare2);
+  swap(superblock->fs_old_nsect);
+  swap(superblock->fs_old_spc);
+  swap(superblock->fs_old_ncyl);
+  swap(superblock->fs_old_cpg);
+  swap(superblock->fs_ipg);
+  swap(superblock->fs_fpg);
+  swap(superblock->fs_swuid);
+  //swap(superblock->fs_pad);
+  swap(superblock->fs_cgrotor);
+  swap(superblock->fs_old_cpc);
+  swap(superblock->fs_maxbsize);
+  swap(superblock->fs_unrefs);
+  swap(superblock->fs_providersize);
+  swap(superblock->fs_metaspace);
+  swap(superblock->fs_sparecon64[0]);
+  swap(superblock->fs_sparecon64[1]);
+  swap(superblock->fs_sparecon64[2]);
+  swap(superblock->fs_sparecon64[3]);
+  swap(superblock->fs_sparecon64[4]);
+  swap(superblock->fs_sparecon64[5]);
+  swap(superblock->fs_sparecon64[6]);
+  swap(superblock->fs_sparecon64[7]);
+  swap(superblock->fs_sparecon64[8]);
+  swap(superblock->fs_sparecon64[9]);
+  swap(superblock->fs_sparecon64[10]);
+  swap(superblock->fs_sparecon64[11]);
+  swap(superblock->fs_sparecon64[12]);
+  swap(superblock->fs_sparecon64[13]);
+  swap(superblock->fs_sblockloc);
+  swap(superblock->fs_time);
+  swap(superblock->fs_size);
+  swap(superblock->fs_dsize);
+  swap(superblock->fs_csaddr);
+  swap(superblock->fs_pendingblocks);
+  swap(superblock->fs_pendinginodes);
+  swap(superblock->fs_snapinum[0]);
+  swap(superblock->fs_snapinum[1]);
+  swap(superblock->fs_snapinum[2]);
+  swap(superblock->fs_snapinum[3]);
+  swap(superblock->fs_snapinum[4]);
+  swap(superblock->fs_snapinum[5]);
+  swap(superblock->fs_snapinum[6]);
+  swap(superblock->fs_snapinum[7]);
+  swap(superblock->fs_snapinum[8]);
+  swap(superblock->fs_snapinum[9]);
+  swap(superblock->fs_snapinum[10]);
+  swap(superblock->fs_snapinum[11]);
+  swap(superblock->fs_snapinum[12]);
+  swap(superblock->fs_snapinum[13]);
+  swap(superblock->fs_snapinum[14]);
+  swap(superblock->fs_snapinum[15]);
+  swap(superblock->fs_snapinum[16]);
+  swap(superblock->fs_snapinum[17]);
+  swap(superblock->fs_snapinum[18]);
+  swap(superblock->fs_snapinum[19]);
+  swap(superblock->fs_avgfilesize);
+  swap(superblock->fs_avgfpdir);
+  swap(superblock->fs_save_cgsize);
+  swap(superblock->fs_mtime);
+  swap(superblock->fs_sujfree);
+  swap(superblock->fs_sparecon32[0]);
+  swap(superblock->fs_sparecon32[1]);
+  swap(superblock->fs_sparecon32[2]);
+  swap(superblock->fs_sparecon32[3]);
+  swap(superblock->fs_sparecon32[4]);
+  swap(superblock->fs_sparecon32[5]);
+  swap(superblock->fs_sparecon32[6]);
+  swap(superblock->fs_sparecon32[7]);
+  swap(superblock->fs_sparecon32[8]);
+  swap(superblock->fs_sparecon32[9]);
+  swap(superblock->fs_sparecon32[10]);
+  swap(superblock->fs_sparecon32[11]);
+  swap(superblock->fs_sparecon32[12]);
+  swap(superblock->fs_sparecon32[13]);
+  swap(superblock->fs_sparecon32[14]);
+  swap(superblock->fs_sparecon32[15]);
+  swap(superblock->fs_sparecon32[16]);
+  swap(superblock->fs_sparecon32[17]);
+  swap(superblock->fs_sparecon32[18]);
+  swap(superblock->fs_sparecon32[19]);
+  swap(superblock->fs_sparecon32[20]);
+  swap(superblock->fs_sparecon32[21]);
+  swap(superblock->fs_sparecon32[22]);
+  swap(superblock->fs_flags);
+  swap(superblock->fs_contigsumsize);
+  swap(superblock->fs_maxsymlinklen);
+  swap(superblock->fs_old_inodefmt);
+  swap(superblock->fs_maxfilesize);
+  swap(superblock->fs_qbmask);
+  swap(superblock->fs_qfmask);
+  swap(superblock->fs_state);
+  swap(superblock->fs_old_postblformat);
+  swap(superblock->fs_old_nrpos);
+  swap(superblock->fs_spare5[0]);
+  swap(superblock->fs_spare5[1]);
+  swap(superblock->fs_magic);
 }
 
 } /* namespace adapters */
