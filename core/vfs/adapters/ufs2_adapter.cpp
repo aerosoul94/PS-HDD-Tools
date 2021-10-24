@@ -142,8 +142,9 @@ void Ufs2Adapter::loadDataOffsets(VfsNode* node, ufs2_dinode* inode)
     for (auto x = 0; x < super->fs_nindir; x++) {
       if (buffer[x] == 0)
         return;
-      node->addOffset("blocktable", swap(buffer[x]) * super->fs_fsize);
-      loadIndirectBlockTable(node, swap(buffer[x]));
+      swap(buffer[x]);
+      node->addOffset("blocktable", buffer[x] * super->fs_fsize);
+      loadIndirectBlockTable(node, buffer[x]);
     }
   }
 
@@ -155,15 +156,17 @@ void Ufs2Adapter::loadDataOffsets(VfsNode* node, ufs2_dinode* inode)
     for (auto x = 0; x < super->fs_nindir; x++) {
       if (buffer[x] == 0)
         return;
-      node->addOffset("blocktable", swap(buffer[x]) * super->fs_fsize);
+      swap(buffer[x]);
+      node->addOffset("blocktable", buffer[x] * super->fs_fsize);
       std::vector<uint64_t> bufferY(super->fs_bsize / sizeof(uint64_t));
       dataProvider->seek(buffer[x] * super->fs_fsize);
       dataProvider->read(reinterpret_cast<char*>(bufferY.data()), super->fs_bsize);
       for (auto y = 0; y < super->fs_nindir; y++) {
         if (bufferY[y] == 0)
           return;
-        node->addOffset("blocktable", swap(bufferY[y]) * super->fs_fsize);
-        loadIndirectBlockTable(node, swap(bufferY[y]));
+        swap(bufferY[y]);
+        node->addOffset("blocktable", bufferY[y] * super->fs_fsize);
+        loadIndirectBlockTable(node, bufferY[y]);
       }
     }
   }
@@ -177,7 +180,8 @@ void Ufs2Adapter::loadIndirectBlockTable(VfsNode* node, ufs2_daddr_t addr)
   for (auto i = 0; i < super->fs_nindir; i++) {
     if (buffer[i] == 0)
       return;
-    auto offset = swap(buffer[i]) * super->fs_fsize;
+    swap(buffer[i]);
+    auto offset = buffer[i] * super->fs_fsize;
     node->addOffset("data", offset);
   }
 }

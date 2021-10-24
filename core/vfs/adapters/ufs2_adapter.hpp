@@ -34,19 +34,24 @@ private:
   void loadDataOffsets(VfsNode* node, ufs2_dinode* inode);
   void loadIndirectBlockTable(VfsNode* node, ufs2_daddr_t addr);
   
+  /* In-place endian swap functions.. */
+
   template <typename T, typename std::enable_if<sizeof(T) == 8, bool>::type = true>
-  T swap(T v) {
-    return needsSwap ? swap64(v) : v;
+  T swap(T& v) {
+    v = needsSwap ? swap64(v) : v;
+    return v;
   }
   
   template <typename T, typename std::enable_if<sizeof(T) == 4, bool>::type = true>
-  T swap(T v) {
-    return needsSwap ? swap32(v) : v;
+  T swap(T& v) {
+    v = needsSwap ? swap32(v) : v;
+    return v;
   }
   
   template <typename T, typename std::enable_if<sizeof(T) == 2, bool>::type = true>
-  T swap(T v) {
-    return needsSwap ? swap16(v) : v;
+  T swap(T& v) {
+    v = needsSwap ? swap16(v) : v;
+    return v;
   }
 
   fs* super;
