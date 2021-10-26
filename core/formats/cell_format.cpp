@@ -55,21 +55,32 @@ bool CellDiskFormat::match(disk::Disk* disk, disk::DiskConfig* config)
   auto dataProvider = disk->getDataProvider();
 
   // Make sure we have the correct amount of key data
-  if (keyData.size() < 0x30)
+  if (keyData.size() < 0x30 && !keyData.empty())
     return false;
 
   // Generate encdec keys
-  generateKeys(keyData);
+  if (!keyData.empty())
+    generateKeys(keyData);
 
   std::vector<char> buf(kSectorSize);
+  
+  this->type = Ps3Type::PHAT;
+
+  // Check if decrypted
+  dataProvider->seek(0);
+  dataProvider->read(buf.data(), kSectorSize);
+  disklabel* hdr = reinterpret_cast<disklabel*>(buf.data());
+  if (swap64(hdr->d_magic1) == MAGIC1 && swap64(hdr->d_magic2) == MAGIC2)
+    return true;
 
   this->type = Ps3Type::PHAT;
+  // Check if encrypted
   dataProvider->seek(0);
   dataProvider->setCryptoStrategy(
     new crypto::AesCbcSwappedStrategy(ataKeys)
   );
+  hdr = reinterpret_cast<disklabel*>(buf.data());
   dataProvider->read(buf.data(), kSectorSize);
-  disklabel* hdr = reinterpret_cast<disklabel*>(buf.data());
   if (swap64(hdr->d_magic1) == MAGIC1 && swap64(hdr->d_magic2) == MAGIC2)
     return true;
 
@@ -123,7 +134,7 @@ void CellDiskFormat::generateKeys(std::vector<char>& eidRootKey)
 
   generateKey(
     eidRootKey.data(), 
-    eidRootKey.data() + 0x20, 
+    eidRootKey.data() + 0x20,
     encdec_seed_20, 
     encDecKeys.data() + 0x20
   );
@@ -150,13 +161,16 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
       // TODO: I'm not sure if this is entirely reliable.
       //   This is how we're detecting the VFLASH partition.
       //   Alternatively, we could probably look into the p_acl fields.
-      auto strategy =
-          crypto::AesXtsStrategy(encDecKeys.data(), encDecKeys.data() + 0x20);
       std::vector<char> vflashTable(0x1000);
       dataProvider->seek(0x1000);
-      // This will also decrypt the first layer.
       dataProvider->read(vflashTable.data(), 0x1000);
-      strategy.decrypt(vflashTable.data(), 8, 0x1000);
+      
+      if (encDecKeys.size() > 0) {
+          auto strategy =
+              crypto::AesXtsStrategy(encDecKeys.data(), encDecKeys.data() + 0x20);
+          // This will also decrypt the first layer.
+          strategy.decrypt(vflashTable.data(), 8, 0x1000);
+      }
 
       auto header = reinterpret_cast<disklabel *>(vflashTable.data());
       if (swap64(header->d_magic1) == MAGIC1 &&
@@ -185,70 +199,123 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
     // [4] = dev_flash4 
 
     auto diskStrategy = dataProvider->getCryptoStrategy();
-    auto strategy = new crypto::MultiLayerStrategy();
-    strategy->addLayer(diskStrategy);
+    if (diskStrategy == nullptr)
+    {
+      // Read in the VFLASH partition table
+      std::vector<char> tmp(0x1000);
+      dataProvider->seek(swap64(vflash->p_start) * kSectorSize);
+      dataProvider->read(tmp.data(), 0x1000);
 
-    if (this->type == Ps3Type::PHAT) 
-      strategy->addLayer(new crypto::AesXtsStrategy(encDecKeys.data(),
-        encDecKeys.data() + 0x20));
+      d_partition* vflashTable = reinterpret_cast<d_partition*>(tmp.data() 
+        + sizeof(disklabel));
+
+      auto base = swap64(vflash->p_start);
+
+      // Add dev_flash1
+      {
+        auto partition = disk->addPartition(
+          (base + swap64(vflashTable[1].p_start)) * kSectorSize,
+          swap64(vflashTable[1].p_size) * kSectorSize
+        );
+
+        partition->setName("dev_flash1");
+        partition->getVfs()->setAdapter(
+          new vfs::adapters::FatAdapter(partition->getDataProvider())
+        );
+      }
+
+      // Add dev_flash2
+      {
+        auto partition = disk->addPartition(
+          (base + swap64(vflashTable[2].p_start)) * kSectorSize,
+          swap64(vflashTable[2].p_size) * kSectorSize
+        );
+
+        partition->setName("dev_flash2");
+        partition->getVfs()->setAdapter(
+          new vfs::adapters::FatAdapter(partition->getDataProvider())
+        );
+      }
+
+      // Add dev_flash3
+      {
+        auto partition = disk->addPartition(
+          (base + swap64(vflashTable[3].p_start)) * kSectorSize,
+          swap64(vflashTable[3].p_size) * kSectorSize
+        );
+
+        partition->setName("dev_flash3");
+        partition->getVfs()->setAdapter(
+          new vfs::adapters::FatAdapter(partition->getDataProvider())
+        );
+      }
+    }
     else
-      strategy->addLayer(new crypto::AesXtsStrategy(encDecKeys.data(),
-        encDecKeys.data() + 0x20));
-
-    dataProvider->setCryptoStrategy(strategy);
-
-    // Read in the VFLASH partition table
-    std::vector<char> tmp(0x1000);
-    dataProvider->seek(swap64(vflash->p_start) * kSectorSize);
-    dataProvider->read(tmp.data(), 0x1000);
-
-    d_partition* vflashTable = reinterpret_cast<d_partition*>(tmp.data() 
-      + sizeof(disklabel));
-
-    auto base = swap64(vflash->p_start);
-
-    // Add dev_flash1
     {
-      auto partition = disk->addPartition(
-        (base + swap64(vflashTable[1].p_start)) * kSectorSize,
-        swap64(vflashTable[1].p_size) * kSectorSize
-      );
+      auto strategy = new crypto::MultiLayerStrategy();
+      strategy->addLayer(diskStrategy);
 
-      partition->setName("dev_flash1");
-      partition->getVfs()->setAdapter(
-        new vfs::adapters::FatAdapter(partition->getDataProvider())
-      );
+      if (this->type == Ps3Type::PHAT) 
+        strategy->addLayer(new crypto::AesXtsStrategy(encDecKeys.data(),
+          encDecKeys.data() + 0x20));
+      else
+        strategy->addLayer(new crypto::AesXtsStrategy(encDecKeys.data(),
+          encDecKeys.data() + 0x20));
+
+      dataProvider->setCryptoStrategy(strategy);
+
+      // Read in the VFLASH partition table
+      std::vector<char> tmp(0x1000);
+      dataProvider->seek(swap64(vflash->p_start) * kSectorSize);
+      dataProvider->read(tmp.data(), 0x1000);
+
+      d_partition* vflashTable = reinterpret_cast<d_partition*>(tmp.data() 
+        + sizeof(disklabel));
+
+      auto base = swap64(vflash->p_start);
+
+      // Add dev_flash1
+      {
+        auto partition = disk->addPartition(
+          (base + swap64(vflashTable[1].p_start)) * kSectorSize,
+          swap64(vflashTable[1].p_size) * kSectorSize
+        );
+
+        partition->setName("dev_flash1");
+        partition->getVfs()->setAdapter(
+          new vfs::adapters::FatAdapter(partition->getDataProvider())
+        );
+      }
+
+      // Add dev_flash2
+      {
+        auto partition = disk->addPartition(
+          (base + swap64(vflashTable[2].p_start)) * kSectorSize,
+          swap64(vflashTable[2].p_size) * kSectorSize
+        );
+
+        partition->setName("dev_flash2");
+        partition->getVfs()->setAdapter(
+          new vfs::adapters::FatAdapter(partition->getDataProvider())
+        );
+      }
+
+      // Add dev_flash3
+      {
+        auto partition = disk->addPartition(
+          (base + swap64(vflashTable[3].p_start)) * kSectorSize,
+          swap64(vflashTable[3].p_size) * kSectorSize
+        );
+
+        partition->setName("dev_flash3");
+        partition->getVfs()->setAdapter(
+          new vfs::adapters::FatAdapter(partition->getDataProvider())
+        );
+      }
+
+      dataProvider->setCryptoStrategy(diskStrategy);
     }
-
-    // Add dev_flash2
-    {
-      auto partition = disk->addPartition(
-        (base + swap64(vflashTable[2].p_start)) * kSectorSize,
-        swap64(vflashTable[2].p_size) * kSectorSize
-      );
-
-      partition->setName("dev_flash2");
-      partition->getVfs()->setAdapter(
-        new vfs::adapters::FatAdapter(partition->getDataProvider())
-      );
-    }
-
-    // Add dev_flash3
-    {
-      auto partition = disk->addPartition(
-        (base + swap64(vflashTable[3].p_start)) * kSectorSize,
-        swap64(vflashTable[3].p_size) * kSectorSize
-      );
-
-      partition->setName("dev_flash3");
-      partition->getVfs()->setAdapter(
-        new vfs::adapters::FatAdapter(partition->getDataProvider())
-      );
-    }
-
-    dataProvider->setCryptoStrategy(diskStrategy);
   }
-
   // Add dev_hdd0
   {
     auto partition = disk->addPartition(
