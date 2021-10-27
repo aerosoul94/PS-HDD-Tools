@@ -5,9 +5,6 @@
 #include <stdint.h>
 
 #include "disk_format.hpp"
-#include "partition/ps3.h"
-
-#include <io/data/data_provider.hpp>
 
 namespace formats {
 
@@ -29,6 +26,11 @@ private:
    * @param eidRootKey 
    */
   void generateKeys(std::vector<char>& eidRootKey);
+
+  bool checkPhatDiskLabel(io::data::DataProvider* dataProvider);
+  bool checkSlimDiskLabel(io::data::DataProvider* dataProvider);
+  void addFatPartition(disk::Disk* disk, std::string name, uint64_t start, uint64_t length);
+  void addUfsPartition(disk::Disk* disk, std::string name, uint64_t start, uint64_t length);
 
   std::vector<char> ataKeys;
   std::vector<char> encDecKeys;
