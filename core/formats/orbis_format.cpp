@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include <crypto/crypto_strategy.hpp>
 #include <crypto/aes_xts_strategy.hpp>
 #include <io/data/data_provider.hpp>
 #include <disk/disk.hpp>
@@ -53,73 +54,10 @@ void OrbisDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
   auto userStrategy = new 
     crypto::AesXtsStrategy(keys.data(), keys.data() + 0x10);
 
-  {
-    auto ent = getGptEntByType(&user_ent);
-    auto partition = disk->addPartition(
-      ent->lba_start * kSectorSize, 
-      (ent->lba_end - ent->lba_start) * kSectorSize
-    );
-
-    auto partitionDataProvider = partition->getDataProvider();
-    partitionDataProvider->setSectorBias(ent->lba_start);
-    partitionDataProvider->setCryptoStrategy(userStrategy);
-
-    partition->setName("user");
-    partition->getVfs()->setAdapter(
-      new vfs::adapters::Ufs2Adapter(partition->getDataProvider())
-    );
-  }
-
-  {
-    auto ent = getGptEntByType(&eap_user_ent);
-    auto partition = disk->addPartition(
-      ent->lba_start * kSectorSize,
-      (ent->lba_end - ent->lba_start) * kSectorSize
-    );
-
-    auto partitionDataProvider = partition->getDataProvider();
-    partitionDataProvider->setSectorBias(ent->lba_start);
-    partitionDataProvider->setCryptoStrategy(userStrategy);
-
-    partition->setName("eap_user");
-    partition->getVfs()->setAdapter(
-      new vfs::adapters::Ufs2Adapter(partition->getDataProvider())
-    );
-  }
-
-  {
-    auto ent = getGptEntByType(&eap_vsh_ent);
-    auto partition = disk->addPartition(
-      ent->lba_start * kSectorSize,
-      (ent->lba_end - ent->lba_start) * kSectorSize
-    );
-
-    auto partitionDataProvider = partition->getDataProvider();
-    partitionDataProvider->setSectorBias(ent->lba_start);
-    partitionDataProvider->setCryptoStrategy(userStrategy);
-
-    partition->setName("eap_vsh");
-    partition->getVfs()->setAdapter(
-      new vfs::adapters::FatAdapter(partition->getDataProvider())
-    );
-  }
-
-  {
-    auto ent = getGptEntByType(&update_ent);
-    auto partition = disk->addPartition(
-      ent->lba_start * kSectorSize,
-      (ent->lba_end - ent->lba_start) * kSectorSize
-    );
-
-    auto partitionDataProvider = partition->getDataProvider();
-    partitionDataProvider->setSectorBias(ent->lba_start);
-    partitionDataProvider->setCryptoStrategy(userStrategy);
-
-    partition->setName("update");
-    partition->getVfs()->setAdapter(
-      new vfs::adapters::FatAdapter(partition->getDataProvider())
-    );
-  }
+  addUfsPartition(disk, userStrategy, "user", getGptEntByType(&user_ent));
+  addUfsPartition(disk, userStrategy, "eap_user", getGptEntByType(&eap_user_ent));
+  addFatPartition(disk, userStrategy, "eap_vsh", getGptEntByType(&eap_vsh_ent));
+  addFatPartition(disk, userStrategy, "update", getGptEntByType(&update_ent));
 }
 
 void OrbisDiskFormat::loadGptEntTable(io::data::DataProvider* dataProvider)
@@ -137,6 +75,36 @@ const gpt_ent* OrbisDiskFormat::getGptEntByType(const uuid* type)
     if (!memcmp(&ent.type, type, sizeof(uuid)))
       return &ent;
   return nullptr;
+}
+
+void OrbisDiskFormat::addFatPartition(disk::Disk* disk, crypto::CryptoStrategy* strategy, 
+                                      std::string name, const gpt_ent* ent)
+{
+  if (ent) {
+    auto partition = disk->addPartition(ent->lba_start * kSectorSize, (ent->lba_end - ent->lba_start) * kSectorSize);
+
+    auto partitionDataProvider = partition->getDataProvider();
+    partitionDataProvider->setSectorBias(ent->lba_start);
+    partitionDataProvider->setCryptoStrategy(strategy);
+
+    partition->setName(name);
+    partition->getVfs()->setAdapter(new vfs::adapters::FatAdapter(partition->getDataProvider()));
+  }
+}
+
+void OrbisDiskFormat::addUfsPartition(disk::Disk* disk, crypto::CryptoStrategy* strategy, 
+                                      std::string name, const gpt_ent* ent)
+{
+  if (ent) {
+    auto partition = disk->addPartition(ent->lba_start * kSectorSize, (ent->lba_end - ent->lba_start) * kSectorSize);
+
+    auto partitionDataProvider = partition->getDataProvider();
+    partitionDataProvider->setSectorBias(ent->lba_start);
+    partitionDataProvider->setCryptoStrategy(strategy);
+
+    partition->setName(name);
+    partition->getVfs()->setAdapter(new vfs::adapters::Ufs2Adapter(partition->getDataProvider()));
+  }
 }
 
 } /* namespace formats */

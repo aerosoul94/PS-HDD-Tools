@@ -18,6 +18,7 @@ public:
   void build(disk::Disk*, disk::DiskConfig*) override;
 
 private:
+  // TODO: Move these to a GPT Disk Format class.
   /**
    * @brief Verify that this is a GPT header.
    * 
@@ -40,6 +41,9 @@ private:
    * @return const gpt_ent* 
    */
   const gpt_ent* getGptEntByType(const uuid* type);
+
+  void addFatPartition(disk::Disk* disk, crypto::CryptoStrategy* strategy, std::string name, const gpt_ent* ent);
+  void addUfsPartition(disk::Disk* disk, crypto::CryptoStrategy* strategy, std::string name, const gpt_ent* ent);
   
   gpt_hdr hdr;
   std::vector<gpt_ent> partitions;
