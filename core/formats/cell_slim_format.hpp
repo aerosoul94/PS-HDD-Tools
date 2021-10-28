@@ -1,17 +1,20 @@
-#ifndef CELL_DECRYPTED_FORMAT_HPP
-#define CELL_DECRYPTED_FORMAT_HPP
+#ifndef CELL_SLIM_FORMAT_HPP
+#define CELL_SLIM_FORMAT_HPP
+
+#include <vector>
+#include <stdint.h>
 
 #include "cell_format.hpp"
 
 namespace formats {
-  
+
 /**
- * @brief Detects and loads a decrypted PS3 disk format.
+ * @brief Detects and loads a slim PS3 disk format.
  */
-class CellDecryptedDiskFormat  : public CellDiskFormat
+class CellSlimDiskFormat : public CellDiskFormat
 {
 public:
-  CellDecryptedDiskFormat() {}
+  CellSlimDiskFormat() {}
 
   bool match(disk::Disk* disk, disk::DiskConfig* config) override;
   void build(disk::Disk* disk, disk::DiskConfig* config) override;
@@ -22,4 +25,4 @@ private:
 
 } /* namespace formats */
 
-#endif /* CELL_DECRYPTED_FORMAT_HPP */
+#endif /* CELL_SLIM_FORMAT_HPP */

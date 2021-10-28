@@ -1,9 +1,7 @@
 #include "cell_format.hpp"
 
-#include "partition/ps3.h"
 
 #include <crypto/aes/aes.h>
-#include <crypto/crypto_strategy.hpp>
 #include <crypto/aes_cbc_strategy.hpp>
 #include <crypto/aes_xts_strategy.hpp>
 #include <crypto/aes_cbc_swapped_strategy.hpp>
@@ -11,7 +9,6 @@
 #include <crypto/multi_layer_strategy.hpp>
 #include <disk/partition.hpp>
 #include <io/data/data_provider.hpp>
-#include <utilities/endian.hpp>
 #include <vfs/adapters/fat_adapter.hpp>
 #include <vfs/adapters/ufs2_adapter.hpp>
 
@@ -44,65 +41,6 @@ static uint8_t sb_indiv_seed_20[] =
   0x37, 0x9F, 0x55, 0xF5, 0x77, 0x7D, 0x09, 0xFB, 0xEE, 0xDE, 0x07, 0x05, 0x8E, 0x94, 0xBE, 0x08
 };
 
-bool CellDiskFormat::match(disk::Disk* disk, disk::DiskConfig* config)
-{
-  auto keyData = config->getKeys();
-  auto dataProvider = disk->getDataProvider();
-
-  // Make sure we have the correct amount of key data
-  if (keyData.size() < 0x30 || keyData.empty())
-    return false;
-
-  // Generate encdec keys
-  generateKeys(keyData);
-
-  if (checkPhatDiskLabel(dataProvider))
-    return true;
-
-  if (checkSlimDiskLabel(dataProvider))
-    return true;
-
-  return false;
-}
-
-bool CellDiskFormat::checkPhatDiskLabel(io::data::DataProvider* dataProvider)
-{
-  std::vector<char> buf(kSectorSize);
-
-  dataProvider->setCryptoStrategy(new crypto::AesCbcSwappedStrategy(ataKeys));
-
-  dataProvider->seek(0);
-  dataProvider->read(buf.data(), kSectorSize);
-
-  disklabel* hdr = reinterpret_cast<disklabel*>(buf.data());
-
-  if (swap64(hdr->d_magic1) == MAGIC1 && swap64(hdr->d_magic2) == MAGIC2) {
-    this->type = Ps3Type::PHAT;
-    return true;
-  }
-
-  return false;
-}
-
-bool CellDiskFormat::checkSlimDiskLabel(io::data::DataProvider* dataProvider)
-{
-  std::vector<char> buf(kSectorSize);
-
-  dataProvider->setCryptoStrategy(new crypto::AesXtsSwappedStrategy(ataKeys.data(), ataKeys.data() + 0x20));
-
-  dataProvider->seek(0);
-  dataProvider->read(buf.data(), kSectorSize);
-
-  disklabel* hdr = reinterpret_cast<disklabel*>(buf.data());
-
-  if (swap64(hdr->d_magic1) == MAGIC1 && swap64(hdr->d_magic2) == MAGIC2) {
-    this->type = Ps3Type::SLIM;
-    return true;
-  }
-
-  return false;
-}
-
 void CellDiskFormat::generateKeys(std::vector<char>& eidRootKey)
 {
   auto generateKey = [](char* eid_key, char* eid_iv, uint8_t* seed, char* out) {
@@ -125,65 +63,14 @@ void CellDiskFormat::generateKeys(std::vector<char>& eidRootKey)
   generateKey(eidRootKey.data(), eidRootKey.data() + 0x20, encdec_seed_20, encDecKeys.data() + 0x20);
 }
 
-void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
+void CellDiskFormat::addVflashPartitions(disk::Disk* disk, io::data::DataProvider* dataProvider, d_partition* vflash)
 {
-  auto dataProvider = disk->getDataProvider();
-
-  std::vector<char> buf(0x1000);
-  dataProvider->seek(0);
-  dataProvider->read(buf.data(), 0x1000);
-
-  auto table = reinterpret_cast<d_partition*>(buf.data() + sizeof(disklabel));
-
-  d_partition* vflash = nullptr,
-             * hdd0 = nullptr,
-             * hdd1 = nullptr;
-
-  switch (type) {
-    case Ps3Type::SLIM:
-      vflash = &table[0];
-      hdd0 = &table[1];
-      hdd1 = &table[2];
-      break;
-    case Ps3Type::PHAT: {
-      // TODO: I'm not sure if this is entirely reliable.
-      //   This is how we're detecting the VFLASH partition.
-      //   Alternatively, we could probably look into the p_acl fields.
-
-      // Read in the encrypted vflash table.
-      std::vector<char> vflashTable(0x1000);
-      dataProvider->seek(0x1000);
-      dataProvider->read(vflashTable.data(), 0x1000);
-
-      // This will also decrypt the first layer, the second layer is handled by the disk's crypto strategy.
-      auto strategy = crypto::AesXtsStrategy(encDecKeys.data(), encDecKeys.data() + 0x20);
-      strategy.decrypt(vflashTable.data(), 8, 0x1000);
-
-      auto header = reinterpret_cast<disklabel *>(vflashTable.data());
-      if (swap64(header->d_magic1) == MAGIC1 &&
-          swap64(header->d_magic2) == MAGIC2) {
-        vflash = &table[0];
-        hdd0 = &table[1];
-        hdd1 = &table[2];
-      } else {
-        hdd0 = &table[0];
-        hdd1 = &table[1];
-      }
-      break;
-    }
-    case Ps3Type::UNK: // Should not be possible.
-    default:
-      return;
-  }
-  
-  if (vflash)
-  {
     // vflash has multiple partitions of its own..
     // [0] = ?
     // [1] = dev_flash  FAT16
     // [2] = dev_flash2 FAT16
     // [3] = dev_flash3 FAT12
-    // [4] = dev_flash4 
+    // [4] = dev_flash4
 
     // Save the current crypto strategy.
     auto diskStrategy = dataProvider->getCryptoStrategy();
@@ -191,11 +78,7 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
     // Vflash uses a multiple layers of crypto..
     auto strategy = new crypto::MultiLayerStrategy();
     strategy->addLayer(diskStrategy);
-
-    if (this->type == Ps3Type::PHAT) 
-      strategy->addLayer(new crypto::AesXtsStrategy(encDecKeys.data(), encDecKeys.data() + 0x20));
-    else
-      strategy->addLayer(new crypto::AesXtsStrategy(encDecKeys.data(), encDecKeys.data() + 0x20));
+    strategy->addLayer(new crypto::AesXtsStrategy(encDecKeys.data(), encDecKeys.data() + 0x20));
 
     // TODO: Should probably pass this to disk->addPartition instead of inheriting from the disk.
     dataProvider->setCryptoStrategy(strategy);
@@ -207,19 +90,15 @@ void CellDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
 
     auto base = swap64(vflash->p_start);
 
-    d_partition* vflashTable = reinterpret_cast<d_partition*>(tmp.data() 
-      + sizeof(disklabel));
+    d_partition* vflashTable = reinterpret_cast<d_partition*>(tmp.data()
+        + sizeof(disklabel));
 
     addFatPartition(disk, "dev_flash1", base + swap64(vflashTable[1].p_start), swap64(vflashTable[1].p_size));
     addFatPartition(disk, "dev_flash2", base + swap64(vflashTable[2].p_start), swap64(vflashTable[2].p_size));
     addFatPartition(disk, "dev_flash3", base + swap64(vflashTable[3].p_start), swap64(vflashTable[3].p_size));
 
     // Set the crypto strategyback to the original.
-    dataProvider->setCryptoStrategy(diskStrategy);\
-  }
-
-  addUfsPartition(disk, "dev_hdd0", swap64(hdd0->p_start), swap64(hdd0->p_size));
-  addFatPartition(disk, "dev_hdd1", swap64(hdd1->p_start), swap64(hdd1->p_size));
+    dataProvider->setCryptoStrategy(diskStrategy);
 }
 
 void CellDiskFormat::addFatPartition(disk::Disk* disk, std::string name, uint64_t start, uint64_t length)

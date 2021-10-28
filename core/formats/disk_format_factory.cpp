@@ -1,7 +1,8 @@
 #include "disk_format_factory.hpp"
 
 #include "orbis_format.hpp"
-#include "cell_format.hpp"
+#include "cell_phat_format.hpp"
+#include "cell_slim_format.hpp"
 #include "cell_decrypted_format.hpp"
 
 namespace formats {
@@ -9,7 +10,8 @@ namespace formats {
 DiskFormatFactory::DiskFormatFactory()
 {
   registerFormat(new OrbisDiskFormat());
-  registerFormat(new CellDiskFormat());
+  registerFormat(new CellPhatDiskFormat());
+  registerFormat(new CellSlimDiskFormat());
   registerFormat(new CellDecryptedDiskFormat());
 }
 

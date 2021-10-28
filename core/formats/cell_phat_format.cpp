@@ -1,20 +1,20 @@
-#include "cell_decrypted_format.hpp"
+#include "cell_phat_format.hpp"
 
-#include "partition/ps3.h"
-
-#include <disk/partition.hpp>
-#include <io/data/data_provider.hpp>
+#include <crypto/aes_cbc_swapped_strategy.hpp>
+#include <crypto/aes_xts_strategy.hpp>
 #include <utilities/endian.hpp>
-#include <vfs/adapters/fat_adapter.hpp>
-#include <vfs/adapters/ufs2_adapter.hpp>
-
-#include <vector>
 
 namespace formats {
 
-bool CellDecryptedDiskFormat::match(disk::Disk* disk, disk::DiskConfig* config)
+bool CellPhatDiskFormat::match(disk::Disk* disk, disk::DiskConfig* config)
 {
+    auto keyData = config->getKeys();
     auto dataProvider = disk->getDataProvider();
+
+    if (keyData.size() < 0x30)
+        return false;
+
+    generateKeys(keyData);
 
     if (checkDiskLabel(dataProvider))
         return true;
@@ -22,9 +22,11 @@ bool CellDecryptedDiskFormat::match(disk::Disk* disk, disk::DiskConfig* config)
     return false;
 }
 
-bool CellDecryptedDiskFormat::checkDiskLabel(io::data::DataProvider* dataProvider)
+bool CellPhatDiskFormat::checkDiskLabel(io::data::DataProvider* dataProvider)
 {
     std::vector<char> buf(kSectorSize);
+
+    dataProvider->setCryptoStrategy(new crypto::AesCbcSwappedStrategy(ataKeys));
 
     dataProvider->seek(0);
     dataProvider->read(buf.data(), kSectorSize);
@@ -37,7 +39,7 @@ bool CellDecryptedDiskFormat::checkDiskLabel(io::data::DataProvider* dataProvide
     return false;
 }
 
-void CellDecryptedDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
+void CellPhatDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
 {
     auto dataProvider = disk->getDataProvider();
 
@@ -47,14 +49,18 @@ void CellDecryptedDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
 
     auto table = reinterpret_cast<d_partition*>(buf.data() + sizeof(disklabel));
 
-    d_partition* vflash = nullptr,
-               * hdd0 = nullptr,
-               * hdd1 = nullptr;
+    d_partition *vflash = nullptr,
+                *hdd0 = nullptr,
+                *hdd1 = nullptr;
+
+    // Check if it has the vflash partition table.
+    auto strategy = crypto::AesXtsStrategy(encDecKeys.data(), encDecKeys.data() + 0x20);
+    strategy.decrypt(buf.data() + 0x1000, 8, 0x1000);
 
     auto vflashHeader = reinterpret_cast<disklabel*>(buf.data() + 0x1000);
 
     if (swap64(vflashHeader->d_magic1) == MAGIC1 && swap64(vflashHeader->d_magic2) == MAGIC2) {
-        // NOR
+        // NOR 
         vflash = &table[0];
         hdd0 = &table[1];
         hdd1 = &table[2];
@@ -64,15 +70,8 @@ void CellDecryptedDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
         hdd1 = &table[1];
     }
 
-    if (vflash) {
-        auto base = swap64(vflash->p_start);
-
-        d_partition* vflashTable = reinterpret_cast<d_partition*>(buf.data() + 0x1000 + sizeof(disklabel));
-
-        addFatPartition(disk, "dev_flash1", base + swap64(vflashTable[1].p_start), swap64(vflashTable[1].p_size));
-        addFatPartition(disk, "dev_flash2", base + swap64(vflashTable[2].p_start), swap64(vflashTable[2].p_size));
-        addFatPartition(disk, "dev_flash3", base + swap64(vflashTable[3].p_start), swap64(vflashTable[3].p_size));
-    }
+    if (vflash)
+        addVflashPartitions(disk, dataProvider, vflash);
 
     addUfsPartition(disk, "dev_hdd0", swap64(hdd0->p_start), swap64(hdd0->p_size));
     addFatPartition(disk, "dev_hdd1", swap64(hdd1->p_start), swap64(hdd1->p_size));
