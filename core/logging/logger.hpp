@@ -58,28 +58,28 @@ public:
    * 
    * @param msg 
    */
-  virtual void info(std::string& msg) {};
+  virtual void info([[maybe_unused]] std::string& msg) {};
 
   /**
    * @brief Handles printing of warning messages.
    * 
    * @param msg 
    */
-  virtual void warn(std::string& msg) {};
+  virtual void warn([[maybe_unused]] std::string& msg) {};
   
   /**
    * @brief Handles printing of error messages.
    * 
    * @param msg 
    */
-  virtual void error(std::string& msg) {};
+  virtual void error([[maybe_unused]] std::string& msg) {};
 
   /**
    * @brief Handles printing of debug messages.
    * 
    * @param msg 
    */
-  virtual void debug(std::string& msg) {};
+  virtual void debug([[maybe_unused]] std::string& msg) {};
 
 private:
   LogLevel level;

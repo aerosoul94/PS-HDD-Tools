@@ -5,20 +5,34 @@ project(PSHDDTools)
 include(third_party/third_party.cmake)
 
 # Set the C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 # Export compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+set(BUILD_SHARED_LIBS OFF)
 
-# Change thsi to turn debug mode on/off
+# Change this to turn debug mode on/off
 # for the whole project
 set(CMAKE_BUILD_TYPE RELEASE)
-set(CMAKE_C_FLAGS "-g -Wall -Wextra")
+# Static linking for C objects
+# Show all & extra errors and treat warnings as errors
+set(CMAKE_C_FLAGS "-Wall -Werror -static -Wextra")
+# -g3 for maximum debugging capabilities
 set(CMAKE_C_FLAGS_DEBUG "-g")
-set(CMAKE_C_FLAGS_RELEASE "-O3 -flto")
+# O3 for max optimization and -flto for linker optimization 
+if (MSVC)
+    set(CMAKE_C_FLAGS_RELEASE "-Ox -flto")
+else()
+    set(CMAKE_C_FLAGS_RELEASE "-O3 -flto")
+endif()
 
-set(CMAKE_CXX_FLAGS "-g -Wall -Wextra")
+# Same flags as for C
+set(CMAKE_CXX_FLAGS "-Wall -Werror -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
+if (MSVC)
+    set(CMAKE_CXX_FLAGS_RELEASE "-Ox -flto")
+else()
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
+endif()
 
 # Include all the executables/libraries
 add_subdirectory(core)

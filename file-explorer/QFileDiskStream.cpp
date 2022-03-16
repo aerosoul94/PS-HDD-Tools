@@ -11,7 +11,7 @@ uint64_t QFileDiskStream::read(char* data, uint32_t length)
   return this->file->read(data, length);
 }
 
-uint64_t QFileDiskStream::seek(int64_t offset, uint32_t whence)
+uint64_t QFileDiskStream::seek(int64_t offset, [[maybe_unused]] uint32_t whence)
 {
   // TODO: handle whence
   this->file->seek(offset);

@@ -23,10 +23,10 @@ public:
   uint64_t getLength() const override;
 
 private:
-  uint64_t position;
-  uint64_t start;
-  uint64_t end;
-  uint64_t length;
+  int64_t position;
+  int64_t start;
+  int64_t end;
+  int64_t length;
 };
 
 } /* namespace data */

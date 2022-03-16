@@ -21,7 +21,7 @@ class DataProvider
 {
 public:
   DataProvider(stream::DiskStream* stream, uint32_t sectorSize);
-
+  virtual ~DataProvider() = default;
   /**
    * @brief Set a crypto strategy for this data provider.
    * 

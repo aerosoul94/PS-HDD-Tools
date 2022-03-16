@@ -10,8 +10,8 @@ QDiskBuffer::~QDiskBuffer()
 uchar QDiskBuffer::at(qint64 idx)
 {
   dataProvider->seek(idx);
-  char c;
-  bool res = dataProvider->read(&c, 1);
+  char c = ' ';
+  // bool res = dataProvider->read(&c, 1);
   return static_cast<uchar>(c);
 }
 
@@ -20,14 +20,17 @@ qint64 QDiskBuffer::length() const
   return dataProvider->size();
 }
 
-void QDiskBuffer::insert(qint64 offset, const QByteArray& data)
+// TODO: Implement these
+void QDiskBuffer::insert([[maybe_unused]] qint64 offset, [[maybe_unused]] const QByteArray& data)
 {
   // Not implemented
+  assert(false && "Unimplemented.\n");
 }
 
-void QDiskBuffer::remove(qint64 offset, int length)
+void QDiskBuffer::remove([[maybe_unused]] qint64 offset, [[maybe_unused]] int length)
 {
   // Not implemented
+  assert(false && "Unimplemented.\n");
 }
 
 QByteArray QDiskBuffer::read(qint64 offset, int length)
@@ -46,17 +49,22 @@ bool QDiskBuffer::read(QIODevice* device)
   return true;
 }
 
-void QDiskBuffer::write(QIODevice* device)
+// TODO: Implement these
+void QDiskBuffer::write([[maybe_unused]] QIODevice* device)
 {
   // Not implemented
+  assert(false && "Unimplemented.\n");
 }
 
-qint64 QDiskBuffer::indexOf(const QByteArray& ba, qint64 from)
+qint64 QDiskBuffer::indexOf([[maybe_unused]] const QByteArray& ba, [[maybe_unused]] qint64 from)
 {
+  assert(false && "Unimplemented.\n");
   return 0;
 }
 
-qint64 QDiskBuffer::lastIndexOf(const QByteArray& ba, qint64 from)
+qint64 QDiskBuffer::lastIndexOf([[maybe_unused]] const QByteArray& ba,[[maybe_unused]] qint64 from)
 {
+  assert(false && "Unimplemented.\n");
   return 0;
 }
+

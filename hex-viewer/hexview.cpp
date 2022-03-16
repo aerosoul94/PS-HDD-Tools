@@ -7,9 +7,10 @@
 #include <QInputDialog>
 #include <QApplication>
 #include <QClipboard>
+#include <qwidget.h>
 
 HexView::HexView(disk::Partition* partition, QWidget* parent)
-  : m_partition(partition), QWidget(parent)
+  : QWidget(parent), m_partition(partition)
 {
   m_searchDialog = nullptr;
 

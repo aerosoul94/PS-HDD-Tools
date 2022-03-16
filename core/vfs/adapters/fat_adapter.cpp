@@ -66,7 +66,7 @@ void FatAdapter::loadDirectory(std::vector<char>& buffer, VfsDirectory* root)
 {
   // TODO: Move all this to a FatIndexer class.
   std::u16string longFileName;
-  auto lfnIndex = 0;
+  [[maybe_unused]] auto lfnIndex = 0;
   auto useLfn = false;
   auto curr = buffer.data();
   auto end = buffer.data() + buffer.size();
@@ -100,7 +100,7 @@ void FatAdapter::loadDirectory(std::vector<char>& buffer, VfsDirectory* root)
       std::string name;
       if (useLfn) {
         // Convert unicode name to ascii
-        for (auto i = 0; i < longFileName.length(); i++) {
+        for (size_t i = 0; i < longFileName.length(); i++) {
           auto u = longFileName[i];
           if (u == 0xffff || u == 0x0000)
             break;

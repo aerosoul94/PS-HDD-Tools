@@ -8,5 +8,6 @@ file(GLOB SRC_FILES
 
 add_library(core ${SRC_FILES})
 target_include_directories(core PUBLIC .)
+target_link_libraries(core PUBLIC ${CMAKE_DL_LIBS} m)
 
 set_property(TARGET core PROPERTY POSITION_INDEPENDENT_CODE ON)
