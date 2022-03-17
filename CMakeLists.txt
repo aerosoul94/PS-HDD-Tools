@@ -13,9 +13,9 @@ set(BUILD_SHARED_LIBS OFF)
 # Change this to turn debug mode on/off
 # for the whole project
 set(CMAKE_BUILD_TYPE RELEASE)
+
 # Static linking for C objects
-# Show all & extra errors and treat warnings as errors
-set(CMAKE_C_FLAGS "-Wall -Werror -static -Wextra")
+set(CMAKE_C_FLAGS "-Wall -static -Wextra")
 # -g3 for maximum debugging capabilities
 set(CMAKE_C_FLAGS_DEBUG "-g")
 # O3 for max optimization and -flto for linker optimization 
@@ -26,12 +26,14 @@ else()
 endif()
 
 # Same flags as for C
-set(CMAKE_CXX_FLAGS "-Wall -Werror -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
 if (MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "-Ox -flto")
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g")
 else()
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g")
 endif()
 
 # Include all the executables/libraries
