@@ -15,7 +15,7 @@ set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_BUILD_TYPE RELEASE)
 
 # Static linking for C objects
-set(CMAKE_C_FLAGS "-Wall -static -Wextra")
+set(CMAKE_C_FLAGS "-Wall -static")
 # -g3 for maximum debugging capabilities
 set(CMAKE_C_FLAGS_DEBUG "-g")
 # O3 for max optimization and -flto for linker optimization 
@@ -28,7 +28,7 @@ endif()
 # Same flags as for C
 if (MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "-Ox -flto")
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+    set(CMAKE_CXX_FLAGS "-Wall")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
 else()
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
