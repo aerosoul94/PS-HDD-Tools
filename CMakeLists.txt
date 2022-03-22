@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.14)
 project(PSHDDTools)
 
 # Include third party libraries
@@ -14,22 +14,19 @@ set(BUILD_SHARED_LIBS OFF)
 # for the whole project
 set(CMAKE_BUILD_TYPE RELEASE)
 
-# Static linking for C objects
-set(CMAKE_C_FLAGS "-Wall -static")
-# -g3 for maximum debugging capabilities
-set(CMAKE_C_FLAGS_DEBUG "-g")
 # O3 for max optimization and -flto for linker optimization 
 if (MSVC)
-    set(CMAKE_C_FLAGS_RELEASE "-Ox -flto")
+    set(CMAKE_C_FLAGS_RELEASE "-Ox")
 else()
+    # Static linking for C objects
+    set(CMAKE_C_FLAGS "-Wall -static")
+    set(CMAKE_C_FLAGS_DEBUG "-g")
     set(CMAKE_C_FLAGS_RELEASE "-O3 -flto")
 endif()
 
 # Same flags as for C
 if (MSVC)
-    set(CMAKE_CXX_FLAGS_RELEASE "-Ox -flto")
-    set(CMAKE_CXX_FLAGS "-Wall")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g")
+    set(CMAKE_CXX_FLAGS_RELEASE "-Ox")
 else()
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
     set(CMAKE_CXX_FLAGS "-Wall -Wextra")
