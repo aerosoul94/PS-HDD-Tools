@@ -1,16 +1,9 @@
-name: main
+name: release
 
-on: 
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
-
-env:
-  BUILD_TYPE: Release
+on: [workflow_dispatch]
 
 jobs:
-  build-windows:
+  release-windows:
     runs-on: windows-latest
 
     steps:
@@ -32,14 +25,14 @@ jobs:
         cmake --build ./build --config $BUILD_TYPE
         windeployqt --release --verbose 2 bin/Release/file-explorer.exe
         windeployqt --release --verbose 2 bin/Release/hex-viewer.exe
-
+        
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
         name: Release-${{ runner.os }}
         path: bin/Release
 
-  build-linux:
+  release-linux:
     runs-on: ubuntu-latest
 
     steps:
@@ -61,14 +54,14 @@ jobs:
         cmake --build ./build --config $BUILD_TYPE
         pwd
         ls
-
+        
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
         name: Release-${{ runner.os }}
         path: bin/Release
 
-  build-macos:
+  release-macos:
     runs-on: macos-latest
 
     steps:
@@ -90,7 +83,7 @@ jobs:
         cmake --build ./build --config $BUILD_TYPE
         pwd
         ls
-
+        
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
