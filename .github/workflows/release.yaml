@@ -2,37 +2,125 @@ name: release
 
 on: [workflow_dispatch]
 
+env:
+  BUILD_TYPE: Release
+
 jobs:
-  release-windows:
-    runs-on: windows-latest
 
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create-release.outputs.upload_url }}
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: Test Release
+          body: Test Release
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v2
-      with:
-        modules: 'core gui widgets'
-
-    - name: Create Build Environment
-      run: cmake -S . -B build
-
-    - name: Build
-      shell: bash
-      run: |
-        cmake --build ./build --config $BUILD_TYPE
-        windeployqt --release --verbose 2 bin/Release/file-explorer.exe
-        windeployqt --release --verbose 2 bin/Release/hex-viewer.exe
+  # build:
+  #   name: Build Release Binaries
+  #   
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os:
+  #         #windows-latest
+  #         ubuntu-latest
+  #         #macos-latest
+  #         
+  #   runs-on: ${{ matrix.os }}
+  #   
+  #   steps:
+  #     - name: Checkout Repository
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         submodules: true
+  #         
+  #     - name: Install Qt
+  #       uses: jurplel/install-qt-action@v2
+  #       with:
+  #         modules: 'core gui widgets'
+  #        
+  #     # Build Binaries 
+  #       
+  #     # WINDOWS
+  #   
+  #     #- name: Build for Windows
+  #     #  if: matrix.os == 'windows-latest'
+  #     #  shell: bash
+  #     #  run: |
+  #     #    cmake -S . -B build
+  #     #    windeployqt --release --verbose 2 bin/Release/file-explorer.exe
+  #     #    windeployqt --release --verbose 2 bin/Release/hex-viewer.exe
+  #         
+  #     # LINUX
+  # 
+  #     - name: Build for Linux
+  #       if: matrix.os == 'ubuntu-latest'
+  #       shell: bash
+  #       run: |
+  #         cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  #         cmake --build ./build --config $BUILD_TYPE
+  #         cqtdeployer -bin bin/Release/
+  #         pwd
+  #         ls
+  #         
+  #     # MACOS
+  #         
+  #     - name: Build for Mac OS
+  #       if: matrix.os == 'macos-latest'
+  #       run: 
+  #       shell: bash
+  #       run: |
+  #         cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  #         cmake --build ./build --config $BUILD_TYPE
+  #         pwd
+  #         ls
+  #         
+  #     # Deployment
+  #     
+  #     # WINDOWS
+  #     
+  #     - name: Upload Artifacts for Windows
+  #       if: matrix.os == 'windows-latest'
+  #       uses: actions/upload-artifact@v2
         
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: Release-${{ runner.os }}
-        path: bin/Release
+    
 
-  release-linux:
+  # build-windows:
+  #   runs-on: windows-latest
+  # 
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #     with:
+  #       submodules: true
+  # 
+  #   - name: Install Qt
+  #     uses: jurplel/install-qt-action@v2
+  #     with:
+  #       modules: 'core gui widgets'
+  # 
+  #   - name: Create Build Environment
+  #     run: cmake -S . -B build
+  # 
+  #   - name: Build
+  #     shell: bash
+  #     run: |
+  #       cmake --build ./build --config $BUILD_TYPE
+  #       windeployqt --release --verbose 2 bin/Release/file-explorer.exe
+  #       windeployqt --release --verbose 2 bin/Release/hex-viewer.exe
+  # 
+  #   - name: Upload Artifact
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: Release-${{ runner.os }}
+  #       path: bin/Release
+
+  build-linux:
+    needs: create-release
+  
     runs-on: ubuntu-latest
 
     steps:
@@ -44,6 +132,13 @@ jobs:
       uses: jurplel/install-qt-action@v2
       with:
         modules: 'core gui widgets'
+        
+    - name: Install CQTDeployer
+      run: |
+        sudo snap install cqtdeployer
+        sudo snap connect cqtdeployer:process-control
+        sudo snap connect cqtdeployer:removable-media
+        sudo snap connect cqtdeployer:system-backup
 
     - name: Create Build Environment
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
@@ -52,40 +147,46 @@ jobs:
       shell: bash
       run: |
         cmake --build ./build --config $BUILD_TYPE
+        cqtdeployer -bin bin/Release/
         pwd
         ls
-        
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+
+    # - name: Upload Artifact
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: Release-${{ runner.os }}
+    #     path: DistributionKit/*
+    
+    - name: Upload Release
+      uses: softprops/action-gh-release@v1
       with:
-        name: Release-${{ runner.os }}
-        path: bin/Release
+        files: DistributionKit/*
 
-  release-macos:
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
-
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v2
-      with:
-        modules: 'core gui widgets'
-
-    - name: Create Build Environment
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-
-    - name: Build
-      shell: bash
-      run: |
-        cmake --build ./build --config $BUILD_TYPE
-        pwd
-        ls
-        
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: Release-${{ runner.os }}
-        path: bin/Release
+  #build-macos:
+  #  runs-on: macos-latest
+  #
+  #  steps:
+  #  - uses: actions/checkout@v2
+  #    with:
+  #      submodules: true
+  #
+  #  - name: Install Qt
+  #    uses: jurplel/install-qt-action@v2
+  #    with:
+  #      modules: 'core gui widgets'
+  #
+  #  - name: Create Build Environment
+  #    run: cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  #
+  #  - name: Build
+  #    shell: bash
+  #    run: |
+  #      cmake --build ./build --config $BUILD_TYPE
+  #      pwd
+  #      ls
+  #
+  #  - name: Upload Artifact
+  #    uses: actions/upload-artifact@v2
+  #    with:
+  #      name: Release-${{ runner.os }}
+  #      path: bin/Release
