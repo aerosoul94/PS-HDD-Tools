@@ -20,8 +20,6 @@ jobs:
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
-      with:
-        modules: 'core gui widgets'
 
     - name: Create Build Environment
       run: cmake -S . -B build
@@ -49,8 +47,6 @@ jobs:
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
-      with:
-        modules: 'core gui widgets'
 
     - name: Create Build Environment
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
@@ -78,8 +74,6 @@ jobs:
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
-      with:
-        modules: 'core gui widgets'
 
     - name: Create Build Environment
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
