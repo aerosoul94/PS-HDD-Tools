@@ -1,5 +1,5 @@
 # PS-HDD-Tools
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/aerosoul94/PS-HDD-Tools/main)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/aerosoul94/PS-HDD-Tools/main.yaml?branch=master)
 
 :warning: These tools have not been thoroughly tested.
 
@@ -10,11 +10,16 @@ Supports NAND or NOR PS3 hdd's and any PS4 hdd's.
 Requires either the EID root key (PS3) or EAP hdd key (PS4).
 
 # Contents
+- [PS-HDD-Tools](#ps-hdd-tools)
+- [Contents](#contents)
 - [Thanks to](#thanks-to)
+- [Contributors](#contributors)
 - [Tools](#tools)
     - [Decrypt Tool](#decrypt-tool)
+      - [Usage](#usage)
     - [Hex Viewer](#hex-viewer)
     - [Mount Tool](#mount-tool)
+      - [Usage](#usage-1)
     - [File Explorer](#file-explorer)
 - [Todo](#todo)
 

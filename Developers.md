@@ -22,14 +22,19 @@ These are the project's dependencies and the versions that I used.
   - [Qt 5.14.2](https://download.qt.io/archive/qt/5.14/5.14.2/)
 
 ### Generating Projects With CMake
-Navigate to the directory of project in a terminal, then run the following command:
+Navigate to the directory of project in a terminal, then download all submodules using Git:
+
+`git submodule update --init`
+
+
+To generate the project files using CMake, run the following command:
 
 `mkdir build && cd build && cmake ../`
 
 This will create a build directory with your generated project files.
 
 ### Building
-Optionally, you can also build using cmake with the following command:
+Optionally, you can also build using CMake with the following command:
 
 `cmake --build ./`
 
