@@ -1,14 +1,39 @@
 # Developer's Guide
 This guide serves to help developers make their own tools using the core library.
-- [Set Up](#set-up)
-- [Accessing Partitions](#accessing-partitions)
-- [Accessing a Partition's file system](#accessing-a-partitions-file-system)
-  - [Directory Attributes](#VfsDirectory)
-  - [File Attributes](#VfsFile)
-  - [Common Attributes](#VfsNode)
-- [Accessing Raw Data](#accessing-raw-data)
+- [Developer's Guide](#developers-guide)
+  - [Building the Project](#building-the-project)
+    - [Dependencies](#dependencies)
+    - [Generating Projects With CMake](#generating-projects-with-cmake)
+    - [Building](#building)
+  - [Using the Core Library](#using-the-core-library)
+  - [Accessing Partitions](#accessing-partitions)
+  - [Accessing a Partition’s File System](#accessing-a-partitions-file-system)
+    - [VfsDirectory](#vfsdirectory)
+    - [VfsFile](#vfsfile)
+    - [VfsNode](#vfsnode)
+  - [Accessing Raw Data](#accessing-raw-data)
 
-## Set Up
+## Building the Project
+### Dependencies
+These are the project's dependencies and the versions that I used. 
+- CMake
+  - [cmake version 3.21.2](https://github.com/Kitware/CMake/releases/tag/v3.21.2)
+- Qt5 
+  - [Qt 5.14.2](https://download.qt.io/archive/qt/5.14/5.14.2/)
+
+### Generating Projects With CMake
+Navigate to the directory of project in a terminal, then run the following command:
+
+`mkdir build && cd build && cmake ../`
+
+This will create a build directory with your generated project files.
+
+### Building
+Optionally, you can also build using cmake with the following command:
+
+`cmake --build ./`
+
+## Using the Core Library
 First we need to set up a `DiskConfig`. We create a `FileDiskStream` which, internally, just wraps an `std::ifstream` to provide a stream that the library will read raw, unprocesssed data from a file. Then we load our keys file to memory and pass that to the `DiskConfig` as well.
 ```cpp
 FileDiskStream* stream = new FileDiskStream("c:/path/to/hdd/image.img");
@@ -33,7 +58,7 @@ Partition* partition = disk->getPartitionByName("dev_hdd0");
 
 Or you can request all partitions using `disk->getPartitions()`.
 
-## Accessing a Partition's file system
+## Accessing a Partition’s File System
 You need to mount the file system before you are able to access it. To do so, request the `Vfs` associated with a partition, then call it's `mount()` method. After you mount it, be sure to check if it succeeded by calling `isMounted()`. After successfully mounting, you can access the root of the file system by using `getRoot()`, which returns a `VfsDirectory` that contains files at the root of the file system.
 
 **Note:** Mounting the file system involves indexing all files and all data that each file references. Plan for the possibility that it may take some extra time to mount.
@@ -83,7 +108,7 @@ They share these methods:
 |getCreationTime|Get the time this node was created|
 |getOffsets|Get data offsets referenced to by this node|
 
-## Accessing raw data
+## Accessing Raw Data
 You can access raw data by using `DataProvider`s. Both the `Disk` and `Partition` classes have their own `DataProvider`s. The `Disk` class has access to the entire disk, while the `Partition` class only has access to the range it exists in. The `DataProvider` will take care of decrypting sectors (even multiple layers) for you.
 ```cpp
 DataProvider* reader;
