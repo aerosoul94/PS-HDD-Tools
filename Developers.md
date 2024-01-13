@@ -26,17 +26,16 @@ Navigate to the directory of project in a terminal, then download all submodules
 
 `git submodule update --init`
 
-
 To generate the project files using CMake, run the following command:
 
-`mkdir build && cd build && cmake ../`
+`cmake -S . -B build/`
 
-This will create a build directory with your generated project files.
+This will create a `build` directory with your generated project files.
 
 ### Building
 Optionally, you can also build using CMake with the following command:
 
-`cmake --build ./`
+`cmake --build ./build`
 
 ## Using the Core Library
 First we need to set up a `DiskConfig`. We create a `FileDiskStream` which, internally, just wraps an `std::ifstream` to provide a stream that the library will read raw, unprocesssed data from a file. Then we load our keys file to memory and pass that to the `DiskConfig` as well.
