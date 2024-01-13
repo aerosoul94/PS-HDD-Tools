@@ -1,7 +1,8 @@
-add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/pybind11 build)
+cmake_minimum_required(VERSION 3.14)
+
 pybind11_add_module(disklib main.cpp)
+
 target_link_libraries(disklib PRIVATE core)
-include_directories(${PROJECT_SOURCE_DIR}/core)
 
 set_target_properties(disklib PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY_DEBUG "${PROJECT_SOURCE_DIR}/bin/Debug"

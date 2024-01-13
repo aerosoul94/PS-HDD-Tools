@@ -15,11 +15,12 @@ void SearchThread::run()
   const quint32 kBufSize = 0x400000;
   quint64 pos = static_cast<quint64>(m_from) + 1;
   QByteArray buffer(kBufSize, 0);
+  QTextStream out(stdout);
 
   qDebug() << m_needle.toHex();
   for (; pos < m_hayStack->getLength(); 
-      pos += (kBufSize - m_needle.size())) {
-    qDebug() << hex << pos;
+    pos += (kBufSize - m_needle.size())) {
+    qDebug() << Qt::hex << pos;
     if (m_canceled)
       return;
     emit progress(pos);

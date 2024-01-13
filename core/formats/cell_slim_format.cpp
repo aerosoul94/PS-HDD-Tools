@@ -38,7 +38,7 @@ bool CellSlimDiskFormat::checkDiskLabel(io::data::DataProvider* dataProvider)
     return false;
 }
 
-void CellSlimDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
+void CellSlimDiskFormat::build(disk::Disk* disk, [[maybe_unused]] disk::DiskConfig* config)
 {
     auto dataProvider = disk->getDataProvider();
 

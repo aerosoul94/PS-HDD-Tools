@@ -48,9 +48,11 @@ uint32_t FatFileAllocationTable::getFatEntry(uint32_t clusterIndex)
     case FatType::FAT32:
       return this->getFat32Entry(clusterIndex);
   }
+  
+  return 0;
 }
 
-uint32_t FatFileAllocationTable::getFat12Entry(uint32_t clusterIndex)
+uint32_t FatFileAllocationTable::getFat12Entry([[maybe_unused]] uint32_t clusterIndex)
 {
   return FAT_CLUSTER_LAST;
 }

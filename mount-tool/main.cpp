@@ -59,7 +59,7 @@ void buildConfig(disk::DiskConfig* config, std::string& imageFile, std::ifstream
   config->setStream(stream);
 }
 
-void printUsage(int argc, char** argv)
+void printUsage([[maybe_unused]] int argc, char** argv)
 {
   std::cout << "Usage: " << argv[0] << " [command] [arguments...]" << std::endl
             << std::endl

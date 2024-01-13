@@ -1,5 +1,6 @@
 #include "bounded_data_provider.hpp"
 
+#include <cstdint>
 #include <stdexcept>
 
 namespace io {
@@ -34,7 +35,7 @@ uint64_t BoundedDataProvider::seek(int64_t offset, uint32_t whence)
       // Seek from beginning
       if (offset < 0)
         throw std::invalid_argument("Cannot seek before start of stream");
-      if (offset > this->length)
+      if (offset > (int64_t)this->length)
         offset = this->length;
       this->position = offset;
       break;

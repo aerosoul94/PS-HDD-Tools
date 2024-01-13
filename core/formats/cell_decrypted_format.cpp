@@ -12,7 +12,7 @@
 
 namespace formats {
 
-bool CellDecryptedDiskFormat::match(disk::Disk* disk, disk::DiskConfig* config)
+bool CellDecryptedDiskFormat::match(disk::Disk* disk, [[maybe_unused]] disk::DiskConfig* config)
 {
     auto dataProvider = disk->getDataProvider();
 
@@ -37,7 +37,7 @@ bool CellDecryptedDiskFormat::checkDiskLabel(io::data::DataProvider* dataProvide
     return false;
 }
 
-void CellDecryptedDiskFormat::build(disk::Disk* disk, disk::DiskConfig* config)
+void CellDecryptedDiskFormat::build(disk::Disk* disk, [[maybe_unused]] disk::DiskConfig* config)
 {
     auto dataProvider = disk->getDataProvider();
 

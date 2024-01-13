@@ -8,7 +8,7 @@ namespace disk {
 Partition::Partition(Disk* disk, uint64_t start, uint64_t length)
 {
   this->dataProvider = new io::data::BoundedDataProvider(
-    disk->getDataProvider(), start, length, disk->getSectorSize());
+      disk->getDataProvider(), start, length, disk->getSectorSize());
   this->start = start;
   this->end = start + length;
   this->length = length;
@@ -17,7 +17,7 @@ Partition::Partition(Disk* disk, uint64_t start, uint64_t length)
 
 Partition::~Partition()
 {
-  delete this->dataProvider;
+  delete dataProvider;
 }
 
 void Partition::mount()
